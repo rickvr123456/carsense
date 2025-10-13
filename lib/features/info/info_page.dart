@@ -25,17 +25,17 @@ class InfoPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'CarSense è un emulatore OBD-II che simula la connessione alla presa diagnostica del veicolo per mostrare valori in tempo reale come RPM, velocità, tensione batteria e temperatura liquido di raffreddamento.',
+              'CarSense è un’applicazione pensata per tutti gli appassionati di motori che intendono approcciarsi al mondo  della meccanica in maniera semplice ma non superficiale. ',
               style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
             ),
             const SizedBox(height: 12),
             Text(
-              'La funzione di scansione genera casualmente codici DTC (es. P0340) per testare i flussi di diagnosi senza hardware reale; i codici vengono poi elencati nella schermata Problemi.',
+              'Attraverso la scansione della centralina tramite presa OBD2, CarHealth restituirà una panoramica completa di tutti gli errori riportati dalla centralina della propria autovettura, con una spiegazione dettagliata dell’errore, delle probabili cause e delle possibili soluzioni. ',
               style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
             ),
             const SizedBox(height: 12),
             Text(
-              'Sono disponibili anche una schermata di supporto con assistente IA e una mappa basata su Google Maps, che verranno integrate progressivamente.',
+              'Inoltre, è integrata un’intelligenza artificiale che aiuta l’utente nella comprensione del problema, e che è in grado di rispondere alle richieste dell’utente riguardo eventuali dubbi sul proprio veicolo',
               style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
             ),
           ],

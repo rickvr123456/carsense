@@ -37,8 +37,8 @@ class _DashboardView extends StatelessWidget {
             actions: [
               IconButton(
                 tooltip: 'Informazioni',
-                icon: const Icon(Icons.info_outline_rounded,
-                    color: Colors.white70),
+                icon:
+                    const Icon(Icons.info_outline_rounded, color: Colors.green),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const InfoPage()),

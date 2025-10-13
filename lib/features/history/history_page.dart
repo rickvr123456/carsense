@@ -35,6 +35,7 @@ class _HistoryPageState extends State<HistoryPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_forever),
+            color: Colors.red,
             onPressed: () async {
               final confirmed = await showDialog<bool>(
                 context: context,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
 import 'dashboard_state.dart';
+import '../info/info_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -33,6 +34,18 @@ class _DashboardView extends StatelessWidget {
             centerTitle: true,
             backgroundColor: const Color(0xFF0F1418),
             elevation: 0,
+            actions: [
+              IconButton(
+                tooltip: 'Informazioni',
+                icon: const Icon(Icons.info_outline_rounded,
+                    color: Colors.white70),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const InfoPage()),
+                  );
+                },
+              ),
+            ],
           ),
           body: Padding(
             padding: const EdgeInsets.all(16),

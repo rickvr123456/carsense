@@ -1,6 +1,10 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../../core/models/dtc.dart';
+import '../../services/error_history_service.dart';
+
+final _history = ErrorHistoryService();
+
 
 class DashboardState extends ChangeNotifier {
   bool connected = false;
@@ -51,18 +55,26 @@ class DashboardState extends ChangeNotifier {
     _dtcs.clear();
   }
 
-  void _generateRandomDTCs() {
-    _dtcs.clear();
-    final r = Random();
-    final count = r.nextInt(4); // 0–3 errori
-    for (int i = 0; i < count; i++) {
-      _dtcs.add(Dtc(_randomDtc(r)));
-    }
+void _generateRandomDTCs() {
+  _dtcs.clear();
+  final r = Random();
+  final count = r.nextInt(4); // 0–3 errori
+  for (int i = 0; i < count; i++) {
+    final code = _randomDtc(r);
+    _dtcs.add(Dtc(code));
+    _history.addError(code); // ← Salva ogni codice generato
   }
+}
+
 
   String _randomDtc(Random r) {
     const types = ['P', 'B', 'C', 'U'];
     String digits(int n) => List.generate(n, (_) => r.nextInt(10)).join();
     return '${types[r.nextInt(types.length)]}${digits(4)}';
+  }
+
+  void removeDtcCodes(Set<String> codes) {
+  _dtcs.removeWhere((dtc) => codes.contains(dtc.code));
+  notifyListeners();
   }
 }

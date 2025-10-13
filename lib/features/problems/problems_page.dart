@@ -1,141 +1,125 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
-import '../../services/obd_service.dart';
 
 class ProblemsPage extends StatefulWidget {
   const ProblemsPage({super.key});
-
   @override
   State<ProblemsPage> createState() => _ProblemsPageState();
 }
 
 class _ProblemsPageState extends State<ProblemsPage> {
-  // Configura l’endpoint reale e/o chiave
-  final ObdService obd = ObdService(
-    baseUrl: 'https://example.com', // TODO: sostituisci con API reale
-    apiKey: null, // o 'LA_TUA_API_KEY'
-  );
+  bool _selectionMode = false;
+  final Set<String> _selected = {};
 
-  Future<void> _showDetails(BuildContext context, String code) async {
-    showModalBottomSheet(
+  void _enterSelectionMode() {
+    setState(() {
+      _selectionMode = true;
+    });
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _selectionMode = false;
+      _selected.clear();
+    });
+  }
+
+  void _toggle(String code) {
+    setState(() {
+      if (_selected.contains(code)) {
+        _selected.remove(code);
+      } else {
+        _selected.add(code);
+      }
+    });
+  }
+
+  Future<void> _confirmAndDelete() async {
+    if (_selected.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      backgroundColor: const Color(0xFF1E2A35),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => _ObdDetailsSheet(
-        code: code,
-        loader: () => obd.fetchDtc(code),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Conferma cancellazione'),
+        content: Text('Sei sicuro di voler cancellare ${_selected.length} errore(i)?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sì')),
+        ],
       ),
     );
+
+    if (confirmed == true) {
+      final dashboard = context.read<AppState>().dashboard;
+      dashboard.removeDtcCodes(_selected);
+      _exitSelectionMode();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final dtcs = app.dtcs;
+
+    if (dtcs.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Problemi')),
+        body: const Center(child: Text('Nessun errore rilevato')),
+        floatingActionButton: null,
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Problemi')),
+      appBar: AppBar(
+        title: const Text('Problemi'),
+        leading: _selectionMode
+            ? IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: _exitSelectionMode,
+              )
+            : null,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: dtcs.isEmpty
-            ? const Center(child: Text('Nessun errore rilevato'))
-            : ListView.separated(
-                itemCount: dtcs.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, i) {
-                  final d = dtcs[i];
-                  return ListTile(
-                    leading: const Icon(Icons.error_outline,
-                        color: Colors.orangeAccent),
-                    title: Text(d.code),
-                    subtitle: const Text('Tocca per dettagli'),
-                    onTap: () => _showDetails(context, d.code),
-                  );
-                },
+        child: ListView.separated(
+          itemCount: dtcs.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (context, i) {
+            final d = dtcs[i];
+            final selected = _selectionMode && _selected.contains(d.code);
+            return ListTile(
+              leading: Icon(
+                Icons.error_outline,
+                color: selected ? Colors.green : Colors.orangeAccent,
               ),
-      ),
-      floatingActionButton: dtcs.isEmpty
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => app.clearDtc(),
-              label: const Text('Cancella codici'),
-              icon: const Icon(Icons.cleaning_services),
-            ),
-    );
-  }
-}
-
-class _ObdDetailsSheet extends StatefulWidget {
-  final String code;
-  final Future<ObdInfo?> Function() loader;
-  const _ObdDetailsSheet({required this.code, required this.loader});
-
-  @override
-  State<_ObdDetailsSheet> createState() => _ObdDetailsSheetState();
-}
-
-class _ObdDetailsSheetState extends State<_ObdDetailsSheet> {
-  Future<ObdInfo?>? future;
-
-  @override
-  void initState() {
-    super.initState();
-    future = widget.loader();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        child: FutureBuilder<ObdInfo?>(
-          future: future,
-          builder: (context, snap) {
-            if (snap.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()));
-            }
-            final info = snap.data;
-            if (info == null) {
-              return const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Descrizione non disponibile',
-                    style: TextStyle(color: Colors.white)),
-              );
-            }
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${info.code} — ${info.title}',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700, color: Colors.white)),
-                const SizedBox(height: 8),
-                Text(info.summary,
-                    style: theme.textTheme.bodyLarge
-                        ?.copyWith(color: Colors.white70)),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Icon(Icons.info_outline,
-                        color: Colors.white54, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Le descrizioni sono indicative; verificare il veicolo per diagnosi.',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: Colors.white54),
-                    ),
-                  ],
-                ),
-              ],
+              title: Text(d.code),
+              subtitle: const Text('Tocca per dettagli'),
+              trailing: _selectionMode
+                  ? Checkbox(
+                      value: selected,
+                      onChanged: (_) => _toggle(d.code),
+                      activeColor: Colors.orangeAccent,
+                    )
+                  : null,
+              onTap: _selectionMode ? () => _toggle(d.code) : () {
+                // Qui puoi aprire il bottom sheet per i dettagli, se implementato
+              },
             );
           },
         ),
       ),
+      floatingActionButton: _selectionMode
+          ? FloatingActionButton.extended(
+              onPressed: _confirmAndDelete,
+              label: const Text('Cancella selezionati'),
+              icon: const Icon(Icons.delete),
+            )
+          : FloatingActionButton.extended(
+              onPressed: _enterSelectionMode,
+              label: const Text('Cancella errori'),
+              icon: const Icon(Icons.cleaning_services),
+            ),
     );
   }
 }

@@ -25,16 +25,11 @@ class _ProblemsPageState extends State<ProblemsPage> {
       appBar: AppBar(
         title: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF222b35),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2BE079), width: 1.5),
-          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'PROBLEMI',
+                'PROBLEMI:',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -47,11 +42,11 @@ class _ProblemsPageState extends State<ProblemsPage> {
                 width: 28,
                 height: 28,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF2BE079),
+                  color: Colors.redAccent,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0x402BE079),
+                      color: Color.fromARGB(246, 153, 1, 1),
                       blurRadius: 8,
                       offset: Offset(0, 2),
                     ),

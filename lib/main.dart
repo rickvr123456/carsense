@@ -18,7 +18,7 @@ class CarSenseApp extends StatelessWidget {
         final app = AppState();
         // TODO: non lasciare chiavi in chiaro in produzione.
         // Usa un backend o secret manager; qui per demo locale:
-        final gemini = GeminiService(apiKey: 'INSERISCI_LA_TUA_API_KEY_GEMINI');
+        final gemini = GeminiService(apiKey: 'AIzaSyBO9nCSYlXMYVbtV8Pe8-_JoSZiivGm17A');
         app.dashboard.attachGemini(gemini);
         return app;
       },

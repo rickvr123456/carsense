@@ -1,6 +1,7 @@
 class Dtc {
   final String code;
-  final String? description;
-  final String? detail;
+  String? description; // mutabile per aggiornamento da AI
+  String? detail; // opzionale per testo più lungo
+
   Dtc(this.code, {this.description, this.detail});
 }

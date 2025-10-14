@@ -8,6 +8,12 @@ void main() {
   runApp(const CarSenseApp());
 }
 
+void testGemini(GeminiService svc) async {
+  final m = await svc.describeDtcs(['P0340', 'P0300']);
+  debugPrint('Test map: $m');
+}
+
+
 class CarSenseApp extends StatelessWidget {
   const CarSenseApp({super.key});
 
@@ -20,6 +26,7 @@ class CarSenseApp extends StatelessWidget {
         // Usa un backend o secret manager; qui per demo locale:
         final gemini = GeminiService(apiKey: 'AIzaSyBO9nCSYlXMYVbtV8Pe8-_JoSZiivGm17A');
         app.dashboard.attachGemini(gemini);
+        testGemini(gemini);
         return app;
       },
       child: MaterialApp(

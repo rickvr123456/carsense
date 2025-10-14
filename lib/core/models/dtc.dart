@@ -1,5 +1,6 @@
-class Dtc { //Diagnostic Trouble Code 
+class Dtc {
   final String code;
   final String? description;
-  Dtc(this.code, {this.description});
+  final String? detail;
+  Dtc(this.code, {this.description, this.detail});
 }

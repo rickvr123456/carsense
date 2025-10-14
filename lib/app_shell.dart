@@ -14,53 +14,73 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int index = 0;
+  static const Color _selectedColor = Color(0xFF2BE079);
 
   final pages = const [
     DashboardPage(),
     ProblemsPage(),
     ChatPage(),
     MapPage(),
-    HistoryPage(), // ← nuova pagina, ultima
+    HistoryPage(),
   ];
-
-  Color get _selectedColor => const Color(0xFF2BE079); // verde
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: pages[index],
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: const Color(0xFF0F1418),
-        indicatorColor: Colors.transparent,
-        selectedIndex: index,
-        onDestinationSelected: (i) => setState(() => index = i),
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.speed,
-                color: index == 0 ? _selectedColor : Colors.white70),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.warning_amber,
-                color: index == 1 ? _selectedColor : Colors.white70),
-            label: 'Problemi',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.smart_toy,
-                color: index == 2 ? _selectedColor : Colors.white70),
-            label: 'Supporto IA',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.map,
-                color: index == 3 ? _selectedColor : Colors.white70),
-            label: 'Mappa',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.history,
-                color: index == 4 ? _selectedColor : Colors.white70),
-            label: 'Cronologia',
-          ),
-        ],
+    return Theme(
+      data: Theme.of(context).copyWith(
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: const Color(0xFF0F1418),
+          indicatorColor: Colors.transparent,
+          labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>((states) {
+            if (states.contains(MaterialState.selected)) {
+              return const TextStyle(
+                color: _selectedColor,
+                fontWeight: FontWeight.w600,
+              );
+            }
+            return const TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+            );
+          }),
+          iconTheme: MaterialStateProperty.resolveWith<IconThemeData>((states) {
+            if (states.contains(MaterialState.selected)) {
+              return const IconThemeData(color: _selectedColor);
+            }
+            return const IconThemeData(color: Colors.white70);
+          }),
+        ),
+      ),
+      child: Scaffold(
+        body: pages[index],
+        bottomNavigationBar: NavigationBar(
+          backgroundColor: const Color(0xFF0F1418),
+          indicatorColor: Colors.transparent,
+          selectedIndex: index,
+          onDestinationSelected: (i) => setState(() => index = i),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.speed),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.warning_amber),
+              label: 'Problemi',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.smart_toy),
+              label: 'AI',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.map),
+              label: 'Mappa',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.history),
+              label: 'Cronologia',
+            ),
+          ],
+        ),
       ),
     );
   }

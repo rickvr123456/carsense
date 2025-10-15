@@ -23,6 +23,16 @@ class _ProblemsPageState extends State<ProblemsPage> {
       appBar: AppBar(
         title: Row(
           children: [
+            if (_selectionMode)
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white70),
+                onPressed: () {
+                  setState(() {
+                    _selectionMode = false;
+                    _selected.clear();
+                  });
+                },
+              ),
             const Text(
               'PROBLEMI',
               style: TextStyle(
@@ -47,17 +57,30 @@ class _ProblemsPageState extends State<ProblemsPage> {
                 ],
               ),
             ),
+            const Spacer(),
+            if (dtcs.isNotEmpty && !_selectionMode)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _selectionMode = true;
+                    _selected.clear();
+                  });
+                },
+                child: const Text(
+                  'Cancella errori',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              ),
           ],
         ),
-        leading: _selectionMode
-            ? IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => setState(() {
-                  _selectionMode = false;
-                  _selected.clear();
-                }),
-              )
-            : null,
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -76,45 +99,38 @@ class _ProblemsPageState extends State<ProblemsPage> {
                   final bool isExpanded = expanded[i];
                   final bool isSelected = _selected.contains(d.code);
 
-                  return Card(
-                    color: const Color(0xFF222b35),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    margin: EdgeInsets.zero,
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      color: isExpanded ? const Color(0xFF233246) : const Color(0xFF222b35),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        if (isExpanded)
+                          BoxShadow(
+                            color: Colors.black.withOpacity(.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                      border: Border.all(
+                        color: isExpanded ? const Color(0xFF2BE079) : Colors.black12,
+                        width: isExpanded ? 2 : 1.1,
+                      ),
+                    ),
+                    clipBehavior: Clip.hardEdge,
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        ListTile(
-                          leading: const Icon(Icons.warning_amber, color: Colors.redAccent, size: 30),
-                          title: Text(
-                            d.title?.isNotEmpty == true ? d.title! : d.code,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (_selectionMode)
-                                Checkbox(
-                                  value: isSelected,
-                                  onChanged: (_) {
-                                    setState(() {
-                                      if (isSelected) _selected.remove(d.code);
-                                      else _selected.add(d.code);
-                                    });
-                                  }),
-                              IconButton(
-                                icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.white70),
-                                onPressed: () {
-                                  setState(() {
-                                    expanded[i] = !isExpanded;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(14),
                           onTap: _selectionMode
                               ? () {
                                   setState(() {
-                                    if (isSelected) _selected.remove(d.code);
-                                    else _selected.add(d.code);
+                                    if (isSelected)
+                                      _selected.remove(d.code);
+                                    else
+                                      _selected.add(d.code);
                                   });
                                 }
                               : () {
@@ -122,18 +138,125 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                     expanded[i] = !isExpanded;
                                   });
                                 },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            child: Row(
+                              children: [
+                                const CircleAvatar(
+                                  backgroundColor: Color(0xFF232B37),
+                                  radius: 20,
+                                  child: Icon(Icons.warning, color: Colors.redAccent, size: 27),
+                                ),
+                                const SizedBox(width: 18),
+                                Text(
+                                  d.code,
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    letterSpacing: 1.15,
+                                    fontFamily: 'monospace',
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (_selectionMode)
+                                  Checkbox(
+                                    value: isSelected,
+                                    onChanged: (_) {
+                                      setState(() {
+                                        if (isSelected)
+                                          _selected.remove(d.code);
+                                        else
+                                          _selected.add(d.code);
+                                      });
+                                    },
+                                  ),
+                                if (!_selectionMode)
+                                  Icon(
+                                    isExpanded ? Icons.expand_less : Icons.expand_more,
+                                    color: Colors.white70,
+                                    size: 26,
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                         if (isExpanded)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
-                            child: Text(
-                              d.description ?? 'Descrizione in caricamento…',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                                height: 1.3,
-                              ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 33, right: 14, top: 8, bottom: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (d.title != null && d.title!.isNotEmpty)
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        '\u2022 ',
+                                        style: TextStyle(
+                                          fontSize: 19,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF2BE079),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          d.title!,
+                                          style: const TextStyle(
+                                            color: Color(0xFF2BE079),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 17,
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                if (d.title != null && d.title!.isNotEmpty)
+                                  const SizedBox(height: 5),
+                                if (d.description != null && d.description!.isNotEmpty)
+                                  SelectableText(
+                                    d.description!,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14,
+                                      fontFamily: 'monospace',
+                                      height: 1.22,
+                                      letterSpacing: 0,
+                                    ),
+                                    maxLines: 5,
+                                  ),
+                                if ((d.description == null || d.description!.isEmpty) &&
+                                    (d.title == null || d.title!.isEmpty))
+                                  const Text('Descrizione in caricamento…', style: TextStyle(color: Colors.white70)),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF3660EF),
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 6),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(19),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Richiesta inviata all\'IA per maggiori dettagli...'),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text(
+                                        'Chiedi all\'IA',
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                       ],
@@ -142,42 +265,39 @@ class _ProblemsPageState extends State<ProblemsPage> {
                 },
               ),
       ),
-      floatingActionButton: dtcs.isEmpty
+      floatingActionButton: dtcs.isEmpty || !_selectionMode
           ? null
-          : _selectionMode
-              ? FloatingActionButton.extended(
-                  onPressed: _selected.isEmpty
-                      ? null
-                      : () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Conferma cancellazione'),
-                              content: Text('Sei sicuro di voler cancellare ${_selected.length} errore(i)?'),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-                                TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sì')),
-                              ],
-                            ),
-                          );
-                          if (confirmed == true) {
-                            app.dashboard.removeDtcCodes(_selected);
-                            setState(() {
-                              _selectionMode = false;
-                              _selected.clear();
-                            });
-                          }
-                        },
-                  label: const Text('Cancella selezionati'),
-                  icon: const Icon(Icons.delete),
-                )
-              : FloatingActionButton.extended(
-                  onPressed: () {
-                    setState(() => _selectionMode = true);
-                  },
-                  label: const Text('Cancella errori'),
-                  icon: const Icon(Icons.cleaning_services),
-                ),
+          : FloatingActionButton.extended(
+              onPressed: _selected.isEmpty
+                  ? null
+                  : () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Conferma cancellazione'),
+                          content: Text(
+                              'Sei sicuro di voler cancellare ${_selected.length} errore(i)?'),
+                          actions: [
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('No')),
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Sì')),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true) {
+                        app.dashboard.removeDtcCodes(_selected);
+                        setState(() {
+                          _selectionMode = false;
+                          _selected.clear();
+                        });
+                      }
+                    },
+              label: const Text('Cancella selezionati'),
+              icon: const Icon(Icons.delete),
+            ),
     );
   }
 }

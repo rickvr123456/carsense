@@ -164,7 +164,7 @@ class _MetricsCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                   child: tile(Icons.thermostat, coolant,
-                      '°C Liquido di\raffreddamento')),
+                      '°C Liquido di raffreddamento')),
             ],
           ),
         ],

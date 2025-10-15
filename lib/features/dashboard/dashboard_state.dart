@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../../core/models/dtc.dart';
-import '../../services/gemini_service.dart';
 import '../../services/error_history_service.dart';
+import '../../services/gemini_service.dart';
 
 class DashboardState extends ChangeNotifier {
   bool connected = false;
@@ -19,6 +19,7 @@ class DashboardState extends ChangeNotifier {
   GeminiService? _gemini;
   void attachGemini(GeminiService service) {
     _gemini = service;
+    debugPrint('[Dashboard] GeminiService collegato.');
   }
 
   void toggleConnectionAndScan() {
@@ -45,7 +46,7 @@ class DashboardState extends ChangeNotifier {
   }
 
   void removeDtcCodes(Set<String> codes) {
-    _dtcs.removeWhere((dtc) => codes.contains(dtc.code));
+    _dtcs.removeWhere((d) => codes.contains(d.code));
     notifyListeners();
   }
 
@@ -68,14 +69,13 @@ class DashboardState extends ChangeNotifier {
   void _generateRandomDTCs() {
     _dtcs.clear();
     final r = Random();
-    final count = r.nextInt(4); // 0–3 errori
+    final count = r.nextInt(4);
     for (int i = 0; i < count; i++) {
       final code = _randomDtc(r);
       final dtc = Dtc(code);
       _dtcs.add(dtc);
-      _history.addError(code); // persistenza nella cronologia
+      _history.addError(code);
     }
-    // Subito dopo la generazione, chiedi a Gemini le descrizioni
     _describeWithAI();
   }
 
@@ -86,20 +86,29 @@ class DashboardState extends ChangeNotifier {
   }
 
   Future<void> _describeWithAI() async {
-    if (_gemini == null || _dtcs.isEmpty) return;
+    if (_gemini == null || _dtcs.isEmpty) {
+      debugPrint('[Dashboard] GeminiService non collegato o lista DTC vuota.');
+      return;
+    }
     try {
       final codes = _dtcs.map((e) => e.code).toList();
+      debugPrint('[Dashboard] Richiedo descrizioni a Gemini per: $codes');
       final map = await _gemini!.describeDtcs(codes);
-      if (map.isEmpty) return;
+      if (map.isEmpty) {
+        debugPrint('[Dashboard] Nessuna descrizione ricevuta da Gemini.');
+        return;
+      }
       for (final d in _dtcs) {
-        final desc = map[d.code.toUpperCase()];
-        if (desc != null && (d.description == null || d.description!.isEmpty)) {
-          d.description = desc;
+        final aiDtc = map[d.code.toUpperCase()];
+        if (aiDtc != null) {
+          d.title = aiDtc.title ?? '';
+          d.description = aiDtc.description ?? '';
         }
       }
+      debugPrint('[Dashboard] Descrizioni AI impostate.');
       notifyListeners();
-    } catch (_) {
-      // errore silenziato per non interrompere l'esperienza
+    } catch (e, st) {
+      debugPrint('[Dashboard][ERRORE AI] $e\n$st');
     }
   }
 }

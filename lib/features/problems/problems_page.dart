@@ -9,66 +9,49 @@ class ProblemsPage extends StatefulWidget {
 }
 
 class _ProblemsPageState extends State<ProblemsPage> {
-  List<bool> expanded = [];
   bool _selectionMode = false;
   final Set<String> _selected = {};
+  List<bool> expanded = [];
 
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final dtcs = app.dtcs;
-    if (expanded.length != dtcs.length) {
-      expanded = List<bool>.filled(dtcs.length, false);
-    }
+    if (expanded.length != dtcs.length) expanded = List<bool>.filled(dtcs.length, false);
 
     return Scaffold(
       appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'PROBLEMI:',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  letterSpacing: 1.2,
-                ),
+        title: Row(
+          children: [
+            const Text(
+              'PROBLEMI',
+              style: TextStyle(
+                letterSpacing: 1,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
               ),
-              const SizedBox(width: 10),
-              Container(
-                width: 28,
-                height: 28,
-                decoration: const BoxDecoration(
-                  color: Colors.redAccent,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color.fromARGB(246, 153, 1, 1),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    '${dtcs.length}',
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF222b35),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.redAccent, width: 1.5),
               ),
-            ],
-          ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber, color: Colors.redAccent, size: 20),
+                  const SizedBox(width: 5),
+                  Text('${dtcs.length}', style: const TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
+          ],
         ),
         leading: _selectionMode
             ? IconButton(
-                icon: const Icon(Icons.close, color: Colors.white70),
+                icon: const Icon(Icons.close),
                 onPressed: () => setState(() {
                   _selectionMode = false;
                   _selected.clear();
@@ -78,114 +61,86 @@ class _ProblemsPageState extends State<ProblemsPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
-        child: ListView.separated(
-          itemCount: dtcs.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, i) {
-            final d = dtcs[i];
-            final bool isExpanded = expanded[i];
-            final bool isSelected = _selectionMode && _selected.contains(d.code);
+        child: dtcs.isEmpty
+            ? const Center(
+                child: Text(
+                  'Nessun errore rilevato',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+              )
+            : ListView.separated(
+                itemCount: dtcs.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, i) {
+                  final d = dtcs[i];
+                  final bool isExpanded = expanded[i];
+                  final bool isSelected = _selected.contains(d.code);
 
-            return Card(
-              color: const Color(0xFF222b35),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              margin: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(
-                      Icons.warning_rounded,
-                      color: Colors.redAccent,
-                      size: 28,
-                    ),
-                    title: Text(
-                      d.code,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 19,
-                      ),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  return Card(
+                    color: const Color(0xFF222b35),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    margin: EdgeInsets.zero,
+                    child: Column(
                       children: [
-                        if (_selectionMode)
-                          Checkbox(
-                            value: isSelected,
-                            onChanged: (_) {
-                              setState(() {
-                                if (isSelected) _selected.remove(d.code);
-                                else _selected.add(d.code);
-                              });
-                            },
-                            activeColor: Colors.orangeAccent,
+                        ListTile(
+                          leading: const Icon(Icons.warning_amber, color: Colors.redAccent, size: 30),
+                          title: Text(
+                            d.title?.isNotEmpty == true ? d.title! : d.code,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18),
                           ),
-                        Icon(
-                          isExpanded ? Icons.expand_less : Icons.expand_more,
-                          color: Colors.white60,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_selectionMode)
+                                Checkbox(
+                                  value: isSelected,
+                                  onChanged: (_) {
+                                    setState(() {
+                                      if (isSelected) _selected.remove(d.code);
+                                      else _selected.add(d.code);
+                                    });
+                                  }),
+                              IconButton(
+                                icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.white70),
+                                onPressed: () {
+                                  setState(() {
+                                    expanded[i] = !isExpanded;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          onTap: _selectionMode
+                              ? () {
+                                  setState(() {
+                                    if (isSelected) _selected.remove(d.code);
+                                    else _selected.add(d.code);
+                                  });
+                                }
+                              : () {
+                                  setState(() {
+                                    expanded[i] = !isExpanded;
+                                  });
+                                },
                         ),
+                        if (isExpanded)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+                            child: Text(
+                              d.description ?? 'Descrizione in caricamento…',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
-                    onTap: _selectionMode
-                        ? () {
-                            setState(() {
-                              if (isSelected) _selected.remove(d.code);
-                              else _selected.add(d.code);
-                            });
-                          }
-                        : () {
-                            setState(() {
-                              expanded[i] = !isExpanded;
-                            });
-                          },
-                  ),
-                  if (isExpanded)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            d.description ?? 'Descrizione non disponibile',
-                            style: const TextStyle(
-                              color: Color(0xFF2BE079),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            d.detail ?? "Dettagli in arrivo...",
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontFamily: 'monospace',
-                              fontSize: 14,
-                              height: 1.3,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {}, // Futura integrazione IA
-                              style: TextButton.styleFrom(
-                                backgroundColor: const Color(0xFF3660ef),
-                                foregroundColor: Colors.white,
-                                minimumSize: const Size(0, 0),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                              ),
-                              child: const Text('Chiedi all\'IA', style: TextStyle(fontSize: 14)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
+                  );
+                },
               ),
-            );
-          },
-        ),
       ),
       floatingActionButton: dtcs.isEmpty
           ? null
@@ -206,11 +161,10 @@ class _ProblemsPageState extends State<ProblemsPage> {
                             ),
                           );
                           if (confirmed == true) {
-                            final dashboard = context.read<AppState>().dashboard;
-                            dashboard.removeDtcCodes(_selected);
+                            app.dashboard.removeDtcCodes(_selected);
                             setState(() {
-                              _selected.clear();
                               _selectionMode = false;
+                              _selected.clear();
                             });
                           }
                         },

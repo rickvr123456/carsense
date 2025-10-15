@@ -8,25 +8,21 @@ void main() {
   runApp(const CarSenseApp());
 }
 
-void testGemini(GeminiService svc) async {
-  final m = await svc.describeDtcs(['P0340', 'P0300']);
-  debugPrint('Test map: $m');
-}
-
-
 class CarSenseApp extends StatelessWidget {
   const CarSenseApp({super.key});
 
+  
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) {
         final app = AppState();
-        // TODO: non lasciare chiavi in chiaro in produzione.
-        // Usa un backend o secret manager; qui per demo locale:
-        final gemini = GeminiService(apiKey: 'AIzaSyBO9nCSYlXMYVbtV8Pe8-_JoSZiivGm17A');
+        final gemini = GeminiService(
+          apiKey: 'AIzaSyBO9nCSYlXMYVbtV8Pe8-_JoSZiivGm17A', // Sostituire con chiave reale
+          modelName: 'gemini-2.5-flash', // O altro modello abilitato
+        );
         app.dashboard.attachGemini(gemini);
-        testGemini(gemini);
+        debugPrint('[Main] GeminiService inizializzato.');
         return app;
       },
       child: MaterialApp(

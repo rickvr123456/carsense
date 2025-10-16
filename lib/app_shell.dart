@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'features/problems/problems_page.dart';
-import 'features/chat/chat_page.dart';
+// CAMBIA QUI: usa la nuova pagina AI
+import 'features/ai/ai_chat_page.dart';
 import 'features/map/map_page.dart';
 import 'features/history/history_page.dart';
 
@@ -19,7 +20,7 @@ class _AppShellState extends State<AppShell> {
   final pages = const [
     DashboardPage(),
     ProblemsPage(),
-    ChatPage(),
+    AiChatPage(), // <<— deve essere questa se hai importato ai_chat_page.dart
     MapPage(),
     HistoryPage(),
   ];
@@ -31,7 +32,8 @@ class _AppShellState extends State<AppShell> {
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: const Color(0xFF0F1418),
           indicatorColor: Colors.transparent,
-          labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>((states) {
+          labelTextStyle:
+              MaterialStateProperty.resolveWith<TextStyle>((states) {
             if (states.contains(MaterialState.selected)) {
               return const TextStyle(
                 color: _selectedColor,
@@ -59,26 +61,13 @@ class _AppShellState extends State<AppShell> {
           selectedIndex: index,
           onDestinationSelected: (i) => setState(() => index = i),
           destinations: const [
+            NavigationDestination(icon: Icon(Icons.speed), label: 'Dashboard'),
             NavigationDestination(
-              icon: Icon(Icons.speed),
-              label: 'Dashboard',
-            ),
+                icon: Icon(Icons.warning_amber), label: 'Problemi'),
+            NavigationDestination(icon: Icon(Icons.smart_toy), label: 'AI'),
+            NavigationDestination(icon: Icon(Icons.map), label: 'Mappa'),
             NavigationDestination(
-              icon: Icon(Icons.warning_amber),
-              label: 'Problemi',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.smart_toy),
-              label: 'AI',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.map),
-              label: 'Mappa',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.history),
-              label: 'Cronologia',
-            ),
+                icon: Icon(Icons.history), label: 'Cronologia'),
           ],
         ),
       ),

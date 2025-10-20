@@ -28,24 +28,24 @@ class _AiChatPageState extends State<AiChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Supporto IA',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Supporto IA', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             tooltip: 'Nuova conversazione',
             icon: const Icon(Icons.refresh),
-            onPressed: chat.sending ? null : () => chat.reset(),
+            onPressed: chat.sending ? null : () => chat.reset(savePrevious: false),
           ),
         ],
       ),
       body: Column(
         children: [
-          Expanded(child: _MessagesList(controller: _scroll)),
+          Expanded(
+            child: _MessagesList(controller: _scroll),
+          ),
           if (chat.lastError != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(chat.lastError!,
-                  style: const TextStyle(color: Colors.redAccent)),
+              child: Text(chat.lastError!, style: const TextStyle(color: Colors.redAccent)),
             ),
           SafeArea(
             top: false,
@@ -53,8 +53,10 @@ class _AiChatPageState extends State<AiChatPage> {
               controller: _ctrl,
               focusNode: _focus,
               onSend: (text) async {
-                await context.read<AiChatService>().send(text);
+                if (text.trim().isEmpty) return;
                 _ctrl.clear();
+                await context.read<AiChatService>().send(text);
+                // svuota input solo dopo che la risposta è finita
                 _focus.requestFocus();
                 await Future.delayed(const Duration(milliseconds: 50));
                 if (_scroll.hasClients) {
@@ -85,7 +87,7 @@ class _MessagesList extends StatelessWidget {
     return ListView.builder(
       controller: controller,
       reverse: true,
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      padding: const EdgeInsets.all(12),
       itemCount: items.length,
       itemBuilder: (_, i) {
         final m = items[i];
@@ -105,14 +107,27 @@ class _MessagesList extends StatelessWidget {
                 bottomRight: Radius.circular(isUser ? 4 : 16),
               ),
             ),
-            child: SelectableText(
-              m.text,
-              style: TextStyle(
-                color: isUser ? Colors.black : Colors.white,
-                fontSize: 15,
-                height: 1.25,
-              ),
-            ),
+            child: m.isLoading && !isUser
+                ? const Row(children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Text('Sto scrivendo...', style: TextStyle(color: Colors.white70)),
+                  ])
+                : SelectableText(
+                    m.text,
+                    style: TextStyle(
+                      color: isUser ? Colors.black : Colors.white,
+                      fontSize: 15,
+                      height: 1.25,
+                    ),
+                  ),
           ),
         );
       },
@@ -133,7 +148,7 @@ class _InputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sending = context.watch<AiChatService>().sending;
+    final chat = context.watch<AiChatService>();
 
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
@@ -150,42 +165,33 @@ class _InputBar extends StatelessWidget {
               maxLines: 4,
               minLines: 1,
               textInputAction: TextInputAction.send,
-              onSubmitted: sending ? null : (v) => onSend(v),
+              onSubmitted: chat.sending ? null : (v) => onSend(v),
               decoration: const InputDecoration(
                 hintText: 'Chiedi qualsiasi cosa…',
                 border: OutlineInputBorder(borderSide: BorderSide.none),
                 filled: true,
                 fillColor: Color(0xFF222b35),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
               style: const TextStyle(color: Colors.white),
             ),
           ),
           const SizedBox(width: 8),
           ElevatedButton.icon(
-            onPressed: sending
+            onPressed: chat.sending
                 ? null
                 : () async {
                     final text = controller.text;
                     if (text.trim().isEmpty) return;
                     await onSend(text);
                   },
-            icon: sending
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.send, size: 18),
+            icon: const Icon(Icons.send, size: 18),
             label: const Text('Invia'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3660EF),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],

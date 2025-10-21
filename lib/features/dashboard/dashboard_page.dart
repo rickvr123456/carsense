@@ -134,9 +134,10 @@ class _MetricsCard extends StatelessWidget {
                   fontSize: 28,
                   color: Colors.white,
                   fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(color: Colors.white70)),
+            Text(label, style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
           ],
         );
 

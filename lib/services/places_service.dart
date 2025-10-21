@@ -10,7 +10,7 @@ class PlacesService {
     final url =
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${pos.latitude},${pos.longitude}'
-        '&radius=4000'
+        '&radius=20000'
         '&type=car_repair'
         '&key=$apiKey';
 

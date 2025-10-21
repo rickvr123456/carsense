@@ -62,7 +62,7 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
 
     try {
       await _chat.sendMessage(Content.text(_systemPrompt));
-      final stream = await _chat.sendMessageStream(Content.text(text));
+      final stream = _chat.sendMessageStream(Content.text(text));
       final buffer = StringBuffer();
 
       await for (final chunk in stream) {

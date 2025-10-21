@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
+import '../ai/ai_chat_page.dart'; // aggiunto per la navigazione
 
 class ProblemsPage extends StatefulWidget {
   const ProblemsPage({super.key});
@@ -33,25 +34,17 @@ class _ProblemsPageState extends State<ProblemsPage> {
                   });
                 },
               ),
-            const Text(
-              'PROBLEMI',
-              style: TextStyle(
-                letterSpacing: 1,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(0xFF222b35),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.redAccent, width: 1.5),
+                border: Border.all(color: Colors.orange, width: 1.5),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber, color: Colors.redAccent, size: 20),
+                  const Icon(Icons.warning_amber, color: Colors.orange, size: 20),
                   const SizedBox(width: 5),
                   Text('${dtcs.length}', style: const TextStyle(color: Colors.white)),
                 ],
@@ -114,7 +107,7 @@ class _ProblemsPageState extends State<ProblemsPage> {
                           ),
                       ],
                       border: Border.all(
-                        color: isExpanded ? const Color(0xFF2BE079) : Colors.black12,
+                        color: Colors.black12,
                         width: isExpanded ? 2 : 1.1,
                       ),
                     ),
@@ -127,10 +120,11 @@ class _ProblemsPageState extends State<ProblemsPage> {
                           onTap: _selectionMode
                               ? () {
                                   setState(() {
-                                    if (isSelected)
+                                    if (isSelected) {
                                       _selected.remove(d.code);
-                                    else
+                                    } else {
                                       _selected.add(d.code);
+                                    }
                                   });
                                 }
                               : () {
@@ -145,7 +139,7 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                 const CircleAvatar(
                                   backgroundColor: Color(0xFF232B37),
                                   radius: 20,
-                                  child: Icon(Icons.warning, color: Colors.redAccent, size: 27),
+                                  child: Icon(Icons.warning, color: Colors.orange, size: 27),
                                 ),
                                 const SizedBox(width: 18),
                                 Text(
@@ -164,10 +158,11 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                     value: isSelected,
                                     onChanged: (_) {
                                       setState(() {
-                                        if (isSelected)
+                                        if (isSelected) {
                                           _selected.remove(d.code);
-                                        else
+                                        } else {
                                           _selected.add(d.code);
+                                        }
                                       });
                                     },
                                   ),
@@ -212,8 +207,7 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                       ),
                                     ],
                                   ),
-                                if (d.title != null && d.title!.isNotEmpty)
-                                  const SizedBox(height: 5),
+                                if (d.title != null && d.title!.isNotEmpty) const SizedBox(height: 5),
                                 if (d.description != null && d.description!.isNotEmpty)
                                   SelectableText(
                                     d.description!,
@@ -228,7 +222,8 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                   ),
                                 if ((d.description == null || d.description!.isEmpty) &&
                                     (d.title == null || d.title!.isEmpty))
-                                  const Text('Descrizione in caricamento…', style: TextStyle(color: Colors.white70)),
+                                  const Text('Descrizione in caricamento…',
+                                      style: TextStyle(color: Colors.white70)),
                                 const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
@@ -243,15 +238,20 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                         ),
                                       ),
                                       onPressed: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Richiesta inviata all\'IA per maggiori dettagli...'),
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => AiChatPage(
+                                              initialPrompt:
+                                                  ' Ho un problema con il codice ${d.code}: ${d.title ?? ''}. ${d.description ?? ''}. Puoi aiutarmi a capire la causa e la possibile soluzione?',
+                                            ),
                                           ),
                                         );
                                       },
                                       child: const Text(
                                         'Chiedi all\'IA',
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white),
                                       ),
                                     ),
                                   ],
@@ -278,12 +278,8 @@ class _ProblemsPageState extends State<ProblemsPage> {
                           content: Text(
                               'Sei sicuro di voler cancellare ${_selected.length} errore(i)?'),
                           actions: [
-                            TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('No')),
-                            TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Sì')),
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
+                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sì')),
                           ],
                         ),
                       );

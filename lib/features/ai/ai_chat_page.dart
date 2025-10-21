@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import '../../services/ai_chat_service.dart';
 
 class AiChatPage extends StatefulWidget {
-  const AiChatPage({super.key});
+  final String? initialPrompt;
+  const AiChatPage({super.key, this.initialPrompt});
 
   @override
   State<AiChatPage> createState() => _AiChatPageState();
@@ -23,17 +24,30 @@ class _AiChatPageState extends State<AiChatPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prompt = widget.initialPrompt;
+      if (prompt != null && prompt.isNotEmpty) {
+        await context.read<AiChatService>().send(prompt);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final chat = context.watch<AiChatService>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Supporto IA', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Supporto IA',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             tooltip: 'Nuova conversazione',
             icon: const Icon(Icons.refresh),
-            onPressed: chat.sending ? null : () => chat.reset(savePrevious: false),
+            onPressed:
+                chat.sending ? null : () => chat.reset(savePrevious: false),
           ),
         ],
       ),
@@ -45,7 +59,8 @@ class _AiChatPageState extends State<AiChatPage> {
           if (chat.lastError != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(chat.lastError!, style: const TextStyle(color: Colors.redAccent)),
+              child: Text(chat.lastError!,
+                  style: const TextStyle(color: Colors.redAccent)),
             ),
           SafeArea(
             top: false,
@@ -56,7 +71,6 @@ class _AiChatPageState extends State<AiChatPage> {
                 if (text.trim().isEmpty) return;
                 _ctrl.clear();
                 await context.read<AiChatService>().send(text);
-                // svuota input solo dopo che la risposta è finita
                 _focus.requestFocus();
                 await Future.delayed(const Duration(milliseconds: 50));
                 if (_scroll.hasClients) {
@@ -114,11 +128,13 @@ class _MessagesList extends StatelessWidget {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white70),
                       ),
                     ),
                     SizedBox(width: 10),
-                    Text('Sto scrivendo...', style: TextStyle(color: Colors.white70)),
+                    Text('Sta scrivendo...',
+                        style: TextStyle(color: Colors.white70)),
                   ])
                 : SelectableText(
                     m.text,
@@ -171,7 +187,8 @@ class _InputBar extends StatelessWidget {
                 border: OutlineInputBorder(borderSide: BorderSide.none),
                 filled: true,
                 fillColor: Color(0xFF222b35),
-                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
               style: const TextStyle(color: Colors.white),
             ),
@@ -191,7 +208,8 @@ class _InputBar extends StatelessWidget {
               backgroundColor: const Color(0xFF3660EF),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],

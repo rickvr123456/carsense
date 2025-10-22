@@ -33,8 +33,8 @@ class _AppShellState extends State<AppShell> {
           backgroundColor: const Color(0xFF0F1418),
           indicatorColor: Colors.transparent,
           labelTextStyle:
-              MaterialStateProperty.resolveWith<TextStyle>((states) {
-            if (states.contains(MaterialState.selected)) {
+              WidgetStateProperty.resolveWith<TextStyle>((states) {
+            if (states.contains(WidgetState.selected)) {
               return const TextStyle(
                 color: _selectedColor,
                 fontWeight: FontWeight.w600,
@@ -45,8 +45,8 @@ class _AppShellState extends State<AppShell> {
               fontWeight: FontWeight.w600,
             );
           }),
-          iconTheme: MaterialStateProperty.resolveWith<IconThemeData>((states) {
-            if (states.contains(MaterialState.selected)) {
+          iconTheme: WidgetStateProperty.resolveWith<IconThemeData>((states) {
+            if (states.contains(WidgetState.selected)) {
               return const IconThemeData(color: _selectedColor);
             }
             return const IconThemeData(color: Colors.white70);

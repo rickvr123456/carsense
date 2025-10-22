@@ -90,8 +90,8 @@ class _MapPageState extends State<MapPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _prepareMap,
-        child: const Icon(Icons.refresh),
         tooltip: 'Ricarica officine',
+        child: const Icon(Icons.refresh),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );

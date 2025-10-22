@@ -30,7 +30,7 @@ class InfoPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Attraverso la scansione della centralina tramite presa OBD2, CarHealth restituirà una panoramica completa di tutti gli errori riportati dalla centralina della propria autovettura, con una spiegazione dettagliata dell’errore, delle probabili cause e delle possibili soluzioni. ',
+              'Attraverso la scansione della centralina tramite presa OBD2, CarSense restituirà una panoramica completa di tutti gli errori riportati dalla centralina della propria autovettura, con una spiegazione dettagliata dell’errore, delle probabili cause e delle possibili soluzioni. ',
               style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
             ),
             const SizedBox(height: 12),

@@ -3,41 +3,54 @@ import 'package:flutter/foundation.dart';
 import '../../core/models/dtc.dart';
 import '../../services/error_history_service.dart';
 import '../../services/gemini_service.dart';
+import '../../services/network_helper.dart';
+import '../../riverpod_providers.dart';
 
 class DashboardState extends ChangeNotifier {
   bool connected = false;
+  bool isScanning = false; // NEW: Track scanning state
   int rpm = 0;
   int speed = 0;
   double batteryV = 0;
   int coolantC = 0;
 
   final List<Dtc> _dtcs = [];
-  List<Dtc> get dtcs => List.unmodifiable(_dtcs);
+  List<Dtc> get dtcs => List.unmodifiable(List.from(_dtcs));
 
   final _history = ErrorHistoryService();
+
+  // Network error state
+  String? lastNetworkError;
+  String? lastAiError;
+  bool hasAiError = false;
 
   GeminiService? _gemini;
   void attachGemini(GeminiService service) {
     _gemini = service;
-    debugPrint('[Dashboard] GeminiService collegato.');
+    globalLogger.d('[Dashboard] GeminiService collegato.');
   }
 
   void toggleConnectionAndScan() {
     connected = !connected;
     if (connected) {
+      isScanning = true;
+      notifyListeners();
       _simulateLiveValues();
+      notifyListeners(); // Notify immediately after setting live values
       _generateRandomDTCs();
     } else {
       _clearLiveValues();
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   void rescan() {
     if (!connected) return;
-    _simulateLiveValues();
-    _generateRandomDTCs();
+    isScanning = true;
     notifyListeners();
+    _simulateLiveValues();
+    notifyListeners(); // Notify immediately after setting live values
+    _generateRandomDTCs();
   }
 
   void clearDtc() {
@@ -76,6 +89,7 @@ class DashboardState extends ChangeNotifier {
       _dtcs.add(dtc);
       _history.addError(code);
     }
+    notifyListeners(); // Notify immediately after adding DTCs (before AI descriptions)
     _describeWithAI();
   }
 
@@ -87,28 +101,60 @@ class DashboardState extends ChangeNotifier {
 
   Future<void> _describeWithAI() async {
     if (_gemini == null || _dtcs.isEmpty) {
-      debugPrint('[Dashboard] GeminiService non collegato o lista DTC vuota.');
+      globalLogger.d('[Dashboard] GeminiService non collegato o lista DTC vuota.');
+      isScanning = false;
+      notifyListeners();
       return;
     }
+    
+    // Check network connectivity
+    final hasNetwork = await NetworkHelper.hasConnection();
+    if (!hasNetwork) {
+      lastNetworkError = 'Nessuna connessione a Internet';
+      hasAiError = false;
+      isScanning = false;
+      globalLogger.e('[Dashboard] Nessuna connessione a Internet');
+      notifyListeners();
+      return;
+    }
+    
     try {
+      lastNetworkError = null;
+      lastAiError = null;
+      hasAiError = false;
       final codes = _dtcs.map((e) => e.code).toList();
-      debugPrint('[Dashboard] Richiedo descrizioni a Gemini per: $codes');
+      globalLogger.d('[Dashboard] Richiedo descrizioni a Gemini per: $codes');
       final map = await _gemini!.describeDtcs(codes);
       if (map.isEmpty) {
-        debugPrint('[Dashboard] Nessuna descrizione ricevuta da Gemini.');
+        globalLogger.d('[Dashboard] Nessuna descrizione ricevuta da Gemini.');
+        lastAiError = 'L\'AI non ha fornito descrizioni per i codici rilevati.';
+        hasAiError = true;
+        isScanning = false;
+        notifyListeners();
         return;
       }
-      for (final d in _dtcs) {
+      // Replace DTCs with updated copies instead of mutating
+      for (int i = 0; i < _dtcs.length; i++) {
+        final d = _dtcs[i];
         final aiDtc = map[d.code.toUpperCase()];
         if (aiDtc != null) {
-          d.title = aiDtc.title ?? '';
-          d.description = aiDtc.description ?? '';
+          _dtcs[i] = d.copyWith(
+            title: aiDtc.title ?? d.title,
+            description: aiDtc.description ?? d.description,
+          );
         }
       }
-      debugPrint('[Dashboard] Descrizioni AI impostate.');
+      globalLogger.d('[Dashboard] Descrizioni AI impostate.');
+      isScanning = false;
       notifyListeners();
     } catch (e, st) {
-      debugPrint('[Dashboard][ERRORE AI] $e\n$st');
+      lastNetworkError = null;
+      lastAiError = e.toString();
+      hasAiError = true;
+      isScanning = false;
+      globalLogger.e('[Dashboard][ERRORE AI] $e');
+      globalLogger.e(st.toString());
+      notifyListeners();
     }
   }
 }

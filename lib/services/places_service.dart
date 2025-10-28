@@ -3,8 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PlacesService {
-  final String apiKey;
   PlacesService(this.apiKey);
+
+  final String apiKey;
 
   Future<List<Place>> getNearbyMechanics(LatLng pos) async {
     final url =
@@ -33,8 +34,9 @@ class PlacesService {
 }
 
 class Place {
+  Place({required this.name, required this.latLng, required this.address});
+
   final String name;
   final LatLng latLng;
   final String address;
-  Place({required this.name, required this.latLng, required this.address});
 }

@@ -1,24 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../app_state.dart';
-import '../ai/ai_chat_page.dart'; // aggiunto per la navigazione
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../riverpod_providers.dart';
+import '../../core/utils/error_handler.dart';
 
-class ProblemsPage extends StatefulWidget {
+class ProblemsPage extends ConsumerStatefulWidget {
   const ProblemsPage({super.key});
   @override
-  State<ProblemsPage> createState() => _ProblemsPageState();
+  ConsumerState<ProblemsPage> createState() => _ProblemsPageState();
 }
 
-class _ProblemsPageState extends State<ProblemsPage> {
+class _ProblemsPageState extends ConsumerState<ProblemsPage> {
   bool _selectionMode = false;
   final Set<String> _selected = {};
   List<bool> expanded = [];
+  List<String> _previousDtcCodes = [];
 
   @override
   Widget build(BuildContext context) {
-    final app = context.watch<AppState>();
+    final app = ref.watch(appStateProvider);
     final dtcs = app.dtcs;
-    if (expanded.length != dtcs.length) expanded = List<bool>.filled(dtcs.length, false);
+    
+    // Get current DTC codes
+    final currentDtcCodes = dtcs.map((d) => d.code).toList();
+    
+    // Reset expanded list if DTCs changed (not just length, but actual codes)
+    if (expanded.length != dtcs.length || 
+        !_listsEqual(_previousDtcCodes, currentDtcCodes)) {
+      expanded = List<bool>.filled(dtcs.length, false);
+      _previousDtcCodes = currentDtcCodes;
+    }
+    
+    // Force rebuild when content changes (e.g., descriptions arrive from AI)
+    // This ensures that the ListView rebuilds with updated data
 
     return Scaffold(
       appBar: AppBar(
@@ -93,6 +106,7 @@ class _ProblemsPageState extends State<ProblemsPage> {
                   final bool isSelected = _selected.contains(d.code);
 
                   return AnimatedContainer(
+                    key: ValueKey(d.code), // Key stabile basata solo sul codice
                     duration: const Duration(milliseconds: 180),
                     curve: Curves.easeInOut,
                     decoration: BoxDecoration(
@@ -100,10 +114,10 @@ class _ProblemsPageState extends State<ProblemsPage> {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         if (isExpanded)
-                          BoxShadow(
-                            color: Colors.black.withOpacity(.15),
+                          const BoxShadow(
+                            color: Color.fromRGBO(0, 0, 0, 0.15),
                             blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            offset: Offset(0, 2),
                           ),
                       ],
                       border: Border.all(
@@ -238,15 +252,11 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                         ),
                                       ),
                                       onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => AiChatPage(
-                                              initialPrompt:
-                                                  ' Ho un problema con il codice ${d.code}: ${d.title ?? ''}. ${d.description ?? ''}. Puoi aiutarmi a capire la causa e la possibile soluzione?',
-                                            ),
-                                          ),
-                                        );
+                                        // Set the AI prompt
+                                        ref.read(aiInitialPromptProvider.notifier).state =
+                                            'Ho un problema con il codice ${d.code}: ${d.title ?? ''}. ${d.description ?? ''}. Puoi aiutarmi a capire la causa e la possibile soluzione?';
+                                        // Navigate to AI tab (index 2)
+                                        ref.read(navigationIndexProvider.notifier).state = 2;
                                       },
                                       child: const Text(
                                         'Chiedi all\'IA',
@@ -283,17 +293,33 @@ class _ProblemsPageState extends State<ProblemsPage> {
                           ],
                         ),
                       );
-                      if (confirmed == true) {
+                      if (confirmed == true && mounted) {
+                        final count = _selected.length;
                         app.dashboard.removeDtcCodes(_selected);
                         setState(() {
                           _selectionMode = false;
                           _selected.clear();
                         });
+                        if (context.mounted) {
+                          ErrorHandler.showSuccess(
+                            context,
+                            message: '$count errore(i) cancellato(i) con successo',
+                          );
+                        }
                       }
                     },
               label: const Text('Cancella selezionati'),
               icon: const Icon(Icons.delete),
             ),
     );
+  }
+
+  /// Helper method to compare two lists of strings
+  bool _listsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 }

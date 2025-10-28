@@ -1,32 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../app_state.dart';
-import 'dashboard_state.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../riverpod_providers.dart';
+import '../../core/utils/error_handler.dart';
 import '../info/info_page.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Usa lo stato condiviso AppState per permettere alle altre pagine di leggere i DTC
-    final appState = context.read<AppState>();
-    return ChangeNotifierProvider.value(
-      value: appState.dashboard,
-      child: const _DashboardView(),
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const _DashboardView();
   }
 }
 
-class _DashboardView extends StatelessWidget {
+class _DashboardView extends ConsumerWidget {
   const _DashboardView();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    return Consumer<DashboardState>(
-      builder: (context, state, _) {
-        final connected = state.connected;
+    final state = ref.watch(appStateProvider).dashboard;
+    final connected = state.connected;
+    
+    // Show network error dialog
+    if (state.lastNetworkError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ErrorHandler.showNetworkError(
+          context,
+          onRetry: () => state.rescan(),
+        );
+        state.lastNetworkError = null;
+      });
+    }
+    
+    // Show AI error dialog
+    if (state.hasAiError && state.lastAiError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ErrorHandler.showAiError(
+          context,
+          details: state.lastAiError,
+          onRetry: () => state.rescan(),
+        );
+        state.hasAiError = false;
+        state.lastAiError = null;
+      });
+    }
+    
         return Scaffold(
           backgroundColor: const Color(0xFF0F1418),
           appBar: AppBar(
@@ -65,8 +84,16 @@ class _DashboardView extends StatelessWidget {
                         onPressed: () {
                           if (connected) {
                             state.rescan();
+                            ErrorHandler.showInfo(
+                              context,
+                              message: 'Scansione in corso...',
+                            );
                           } else {
                             state.toggleConnectionAndScan();
+                            ErrorHandler.showSuccess(
+                              context,
+                              message: 'Connesso! Scansione avviata',
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -107,8 +134,6 @@ class _DashboardView extends StatelessWidget {
             ),
           ),
         );
-      },
-    );
   }
 }
 

@@ -50,6 +50,7 @@ class FullscreenLoadingOverlay extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
+                    decoration: TextDecoration.none,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -61,6 +62,7 @@ class FullscreenLoadingOverlay extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
+                    decoration: TextDecoration.none,
                   ),
                   textAlign: TextAlign.center,
                 ),

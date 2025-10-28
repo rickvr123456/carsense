@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../riverpod_providers.dart';
 import '../../core/utils/error_handler.dart';
+import '../../core/models/dtc.dart';
 
 class ProblemsPage extends ConsumerStatefulWidget {
   const ProblemsPage({super.key});
@@ -64,6 +65,23 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
               ),
             ),
             const Spacer(),
+            // Pulsante Riprova AI se ci sono DTC non interpretati
+            if (dtcs.isNotEmpty && !_selectionMode && _hasUninterpretedDtcs(dtcs))
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3660EF),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  app.dashboard.retryAiDescription();
+                },
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('Riprova AI', style: TextStyle(fontSize: 12)),
+              ),
+            const SizedBox(width: 8),
             if (dtcs.isNotEmpty && !_selectionMode)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -321,5 +339,10 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  /// Controlla se ci sono DTC non ancora interpretati
+  bool _hasUninterpretedDtcs(List<Dtc> dtcs) {
+    return dtcs.any((d) => d.title == null || d.title!.isEmpty);
   }
 }

@@ -53,6 +53,18 @@ class DashboardState extends ChangeNotifier {
     _generateRandomDTCs();
   }
 
+  /// Riprova a interpretare solo i DTC non ancora interpretati
+  void retryAiDescription() {
+    final uninterpretedDtcs = _dtcs.where((d) => d.title == null || d.title!.isEmpty).toList();
+    if (uninterpretedDtcs.isEmpty) {
+      globalLogger.d('[Dashboard] Tutti i DTC sono già stati interpretati.');
+      return;
+    }
+    isScanning = true;
+    notifyListeners();
+    _describeWithAI();
+  }
+
   void clearDtc() {
     _dtcs.clear();
     notifyListeners();

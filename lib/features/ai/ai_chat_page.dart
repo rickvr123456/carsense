@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../services/ai_chat_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../riverpod_providers.dart';
+import '../../core/utils/error_handler.dart';
+import '../../core/theme/app_colors.dart';
 
-class AiChatPage extends StatefulWidget {
-  final String? initialPrompt;
-  const AiChatPage({super.key, this.initialPrompt});
+class AiChatPage extends ConsumerStatefulWidget {
+  const AiChatPage({super.key});
 
   @override
-  State<AiChatPage> createState() => _AiChatPageState();
+  ConsumerState<AiChatPage> createState() => _AiChatPageState();
 }
 
-class _AiChatPageState extends State<AiChatPage> {
+class _AiChatPageState extends ConsumerState<AiChatPage> {
   final TextEditingController _ctrl = TextEditingController();
   final FocusNode _focus = FocusNode();
   final ScrollController _scroll = ScrollController();
+  bool _hasProcessedInitialPrompt = false;
 
   @override
   void dispose() {
@@ -24,30 +26,72 @@ class _AiChatPageState extends State<AiChatPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final prompt = widget.initialPrompt;
-      if (prompt != null && prompt.isNotEmpty) {
-        await context.read<AiChatService>().send(prompt);
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final chat = context.watch<AiChatService>();
+    final chat = ref.watch(aiChatServiceProvider);
+    final initialPrompt = ref.watch(aiInitialPromptProvider);
+    
+    // Process initial prompt only once
+    if (initialPrompt != null && !_hasProcessedInitialPrompt) {
+      _hasProcessedInitialPrompt = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await chat.send(initialPrompt);
+        // Clear the prompt after sending
+        ref.read(aiInitialPromptProvider.notifier).state = null;
+      });
+    }
+    
+    // Show error dialog if error occurred
+    if (chat.lastError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (chat.lastError == 'Nessuna connessione a Internet') {
+          ErrorHandler.showNetworkError(context);
+        } else if (chat.lastError!.contains('Timeout')) {
+          ErrorHandler.showGenericError(
+            context,
+            message: 'La richiesta ha impiegato troppo tempo. Riprova.',
+          );
+        } else {
+          ErrorHandler.showAiError(
+            context,
+            details: chat.lastError,
+          );
+        }
+        chat.lastError = null; // Clear after showing
+      });
+    }
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Supporto IA',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        title: const Text(
+          'Supporto IA',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
         actions: [
-          IconButton(
-            tooltip: 'Nuova conversazione',
-            icon: const Icon(Icons.refresh),
-            onPressed:
-                chat.sending ? null : () => chat.reset(savePrevious: false),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: chat.sending ? null : () {
+                chat.reset(savePrevious: false);
+                _hasProcessedInitialPrompt = false;
+              },
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Nuova Chat'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+            ),
           ),
         ],
       ),
@@ -70,7 +114,7 @@ class _AiChatPageState extends State<AiChatPage> {
               onSend: (text) async {
                 if (text.trim().isEmpty) return;
                 _ctrl.clear();
-                await context.read<AiChatService>().send(text);
+                await ref.read(aiChatServiceProvider).send(text);
                 _focus.requestFocus();
                 await Future.delayed(const Duration(milliseconds: 50));
                 if (_scroll.hasClients) {
@@ -89,13 +133,13 @@ class _AiChatPageState extends State<AiChatPage> {
   }
 }
 
-class _MessagesList extends StatelessWidget {
+class _MessagesList extends ConsumerWidget {
   final ScrollController controller;
   const _MessagesList({required this.controller});
 
   @override
-  Widget build(BuildContext context) {
-    final chat = context.watch<AiChatService>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chat = ref.watch(aiChatServiceProvider);
     final items = chat.history.reversed.toList();
 
     return ListView.builder(
@@ -151,7 +195,7 @@ class _MessagesList extends StatelessWidget {
   }
 }
 
-class _InputBar extends StatelessWidget {
+class _InputBar extends ConsumerWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final Future<void> Function(String text) onSend;
@@ -163,9 +207,8 @@ class _InputBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final chat = context.watch<AiChatService>();
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chat = ref.watch(aiChatServiceProvider);
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
       decoration: const BoxDecoration(

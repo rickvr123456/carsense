@@ -7,8 +7,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load .env file
-  await dotenv.load(fileName: '.env');
+  // Load .env file (won't fail if not found)
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    // .env not found or failed to load - continue without it
+  }
 
   runApp(const ProviderScope(child: CarSenseApp()));
 }

@@ -2,21 +2,12 @@
 class AppConstants {
   AppConstants._();
 
-  // App Info
-  static const String appName = 'CarSense';
-  static const String appVersion = '1.0.0';
-
-  // Timeouts
+  // Network Configuration
   static const Duration networkTimeout = Duration(seconds: 30);
-  static const Duration locationTimeout = Duration(seconds: 10);
 
   // Map Configuration
   static const double defaultMapZoom = 13.0;
   static const double mechanicsSearchRadius = 20000; // meters
-
-  // AI Configuration
-  static const String defaultAiModel = 'gemini-2.5-flash';
-  static const int maxChatMessages = 100;
 
   // DTC Configuration
   static const int maxDtcCount = 4;

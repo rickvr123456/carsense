@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'riverpod_providers.dart';
 import 'core/theme/app_colors.dart';
+import 'core/constants/app_strings.dart';
 import 'core/widgets/fullscreen_loading.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'features/problems/problems_page.dart';
@@ -70,15 +71,20 @@ class _AppShellState extends ConsumerState<AppShell> {
               onDestinationSelected: isScanning
                   ? null
                   : (i) => ref.read(navigationIndexProvider.notifier).state = i,
-              destinations: const [
+              destinations: [
                 NavigationDestination(
-                    icon: Icon(Icons.speed), label: 'Dashboard'),
+                    icon: const Icon(Icons.speed),
+                    label: AppStrings.navDashboard),
                 NavigationDestination(
-                    icon: Icon(Icons.warning_amber), label: 'Problemi'),
-                NavigationDestination(icon: Icon(Icons.smart_toy), label: 'AI'),
-                NavigationDestination(icon: Icon(Icons.map), label: 'Mappa'),
+                    icon: const Icon(Icons.warning_amber),
+                    label: AppStrings.navProblems),
                 NavigationDestination(
-                    icon: Icon(Icons.history), label: 'Cronologia'),
+                    icon: const Icon(Icons.smart_toy), label: AppStrings.navAi),
+                NavigationDestination(
+                    icon: const Icon(Icons.map), label: AppStrings.navMap),
+                NavigationDestination(
+                    icon: const Icon(Icons.history),
+                    label: AppStrings.navHistory),
               ],
             ),
           ),

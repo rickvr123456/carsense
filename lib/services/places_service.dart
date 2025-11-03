@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../core/constants/app_constants.dart';
 
 class PlacesService {
   PlacesService(this.apiKey);
@@ -10,7 +11,7 @@ class PlacesService {
   Future<List<Place>> getNearbyMechanics(LatLng pos) async {
     final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${pos.latitude},${pos.longitude}'
-        '&radius=20000'
+        '&radius=${AppConstants.mechanicsSearchRadius}'
         '&type=car_repair'
         '&key=$apiKey';
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/models/dtc.dart';
 import '../../services/error_history_service.dart';
 import '../../services/gemini_service.dart';
@@ -163,7 +164,7 @@ class DashboardState extends ChangeNotifier {
   void _generateRandomDTCs() {
     _dtcs.clear();
     final r = Random();
-    final count = r.nextInt(4);
+    final count = r.nextInt(AppConstants.maxDtcCount + 1);
     for (int i = 0; i < count; i++) {
       final code = _randomDtc(r);
       final dtc = Dtc(code);
@@ -174,7 +175,7 @@ class DashboardState extends ChangeNotifier {
   }
 
   String _randomDtc(Random r) {
-    const types = ['P', 'B', 'C', 'U'];
+    const types = AppConstants.dtcTypes;
     String digits(int n) => List.generate(n, (_) => r.nextInt(10)).join();
     return '${types[r.nextInt(types.length)]}${digits(4)}';
   }

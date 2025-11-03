@@ -7,6 +7,7 @@ import '../../services/places_service.dart';
 import '../../riverpod_providers.dart';
 import '../../core/widgets/common_widgets.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/constants/app_constants.dart';
 import '../../core/utils/error_handler.dart';
 
 class MapPage extends ConsumerStatefulWidget {
@@ -156,7 +157,10 @@ class _MapPageState extends ConsumerState<MapPage> {
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.nearbyMechanics)),
       body: GoogleMap(
-        initialCameraPosition: CameraPosition(target: myPosition!, zoom: 13),
+        initialCameraPosition: CameraPosition(
+          target: myPosition!,
+          zoom: AppConstants.defaultMapZoom,
+        ),
         markers: _mk(),
         myLocationEnabled: true,
         myLocationButtonEnabled: true,

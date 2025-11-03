@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'services/gemini_service.dart';
 import 'services/ai_chat_service.dart';
 import 'services/places_service.dart';
 import 'app_state.dart';
@@ -14,17 +13,22 @@ final loggerProvider = Provider<Logger>((ref) {
   return globalLogger;
 });
 
-final geminiKeyProvider =
-    Provider<String>((ref) => dotenv.env['GEMINI_API_KEY'] ?? '');
 final aiKeyProvider = Provider<String>(
-    (ref) => dotenv.env['AI_API_KEY'] ?? dotenv.env['GEMINI_API_KEY'] ?? '');
+    (ref) {
+      final key = dotenv.env['AI_API_KEY'] ?? dotenv.env['GEMINI_API_KEY'] ?? '';
+      if (key.isEmpty) {
+        globalLogger.w('[Providers] AI keys not configured in .env');
+      }
+      return key;
+    });
 final placesKeyProvider =
-    Provider<String>((ref) => dotenv.env['PLACES_API_KEY'] ?? '');
-
-final geminiServiceProvider = Provider<GeminiService>((ref) {
-  final key = ref.watch(geminiKeyProvider);
-  return GeminiService(apiKey: key);
-});
+    Provider<String>((ref) {
+      final key = dotenv.env['PLACES_API_KEY'] ?? '';
+      if (key.isEmpty) {
+        globalLogger.w('[Providers] PLACES_API_KEY not configured in .env');
+      }
+      return key;
+    });
 
 final aiChatServiceProvider = ChangeNotifierProvider<AiChatService>((ref) {
   final key = ref.watch(aiKeyProvider);
@@ -37,11 +41,7 @@ final placesServiceProvider = Provider<PlacesService>((ref) {
 });
 
 final appStateProvider = ChangeNotifierProvider<AppState>((ref) {
-  final state = AppState();
-  // attach Gemini when created
-  final gemini = ref.read(geminiServiceProvider);
-  state.dashboard.attachGemini(gemini);
-  return state;
+  return AppState();
 });
 
 // Provider for navigation index in AppShell

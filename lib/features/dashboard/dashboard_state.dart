@@ -25,6 +25,8 @@ class DashboardState extends ChangeNotifier {
   bool hasAiError = false;
 
   GeminiService? _gemini;
+  GeminiService? get gemini => _gemini;
+  
   void attachGemini(GeminiService service) {
     _gemini = service;
     globalLogger.d('[Dashboard] GeminiService collegato.');

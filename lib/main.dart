@@ -7,15 +7,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load .env file, but continue if missing (providers will handle empty keys)
-  try {
-    await dotenv.load(fileName: '.env');
-  } catch (e) {
-    debugPrint(
-        '[Main] Warning: .env file not found or failed to load. Using empty API keys.');
-  }
+  // Load .env file
+  await dotenv.load(fileName: '.env');
 
-  // Riverpod providers will read .env themselves
   runApp(const ProviderScope(child: CarSenseApp()));
 }
 

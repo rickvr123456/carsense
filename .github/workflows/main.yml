@@ -22,6 +22,9 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
 
+    - name: Create .env from .env.example
+      run: cp .env.example .env
+
     - name: Run code analysis
       run: flutter analyze --no-fatal-infos
 
@@ -48,6 +51,9 @@ jobs:
 
     - name: Get dependencies
       run: flutter pub get
+
+    - name: Create .env from .env.example
+      run: cp .env.example .env
 
     - name: Build APK (release)
       run: flutter build apk --release

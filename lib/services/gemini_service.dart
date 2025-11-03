@@ -48,10 +48,8 @@ class GeminiService {
   }
 
   String _buildPrompt(List<String> dtcCodes) {
-    return '''
-Sei un assistente tecnico automotive. Per ogni codice OBD-II fornito (formato P/B/C/U + 4 cifre), restituisci un oggetto con "title" (titolo sintetico) e "description" (descrizione di 1-2 frasi) in italiano. Rispondi con un JSON valido contenente tutte le chiavi come codici e valori come oggetti con questi campi.
+    return '''Rispondi con SOLO un oggetto JSON valido, senza alcun testo aggiuntivo prima o dopo.
 
-Esempio:
 {
   "P0340": {
     "title": "Sensore albero a camme malfunzionante",
@@ -59,7 +57,8 @@ Esempio:
   }
 }
 
-Codici: ${dtcCodes.join(', ')}
+Per questi codici OBD-II, genera titolo (sintetico) e description (1-2 frasi in italiano):
+${dtcCodes.join(', ')}
 ''';
   }
 

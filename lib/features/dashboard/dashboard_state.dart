@@ -55,7 +55,8 @@ class DashboardState extends ChangeNotifier {
 
   /// Riprova a interpretare solo i DTC non ancora interpretati
   void retryAiDescription() {
-    final uninterpretedDtcs = _dtcs.where((d) => d.title == null || d.title!.isEmpty).toList();
+    final uninterpretedDtcs =
+        _dtcs.where((d) => d.title == null || d.title!.isEmpty).toList();
     if (uninterpretedDtcs.isEmpty) {
       globalLogger.d('[Dashboard] Tutti i DTC sono già stati interpretati.');
       return;
@@ -113,12 +114,13 @@ class DashboardState extends ChangeNotifier {
 
   Future<void> _describeWithAI() async {
     if (_gemini == null || _dtcs.isEmpty) {
-      globalLogger.d('[Dashboard] GeminiService non collegato o lista DTC vuota.');
+      globalLogger
+          .d('[Dashboard] GeminiService non collegato o lista DTC vuota.');
       isScanning = false;
       notifyListeners();
       return;
     }
-    
+
     // Check network connectivity
     final hasNetwork = await NetworkHelper.hasConnection();
     if (!hasNetwork) {
@@ -129,7 +131,7 @@ class DashboardState extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    
+
     try {
       lastNetworkError = null;
       lastAiError = null;

@@ -29,7 +29,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
   Widget build(BuildContext context) {
     final chat = ref.watch(aiChatServiceProvider);
     final initialPrompt = ref.watch(aiInitialPromptProvider);
-    
+
     // Process initial prompt only once
     if (initialPrompt != null && !_hasProcessedInitialPrompt) {
       _hasProcessedInitialPrompt = true;
@@ -39,7 +39,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
         ref.read(aiInitialPromptProvider.notifier).state = null;
       });
     }
-    
+
     // Show error dialog if error occurred
     if (chat.lastError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,16 +76,19 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: ElevatedButton.icon(
-              onPressed: chat.sending ? null : () {
-                chat.reset(savePrevious: false);
-                _hasProcessedInitialPrompt = false;
-              },
+              onPressed: chat.sending
+                  ? null
+                  : () {
+                      chat.reset(savePrevious: false);
+                      _hasProcessedInitialPrompt = false;
+                    },
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Nuova Chat'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

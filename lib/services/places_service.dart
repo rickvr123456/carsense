@@ -8,8 +8,7 @@ class PlacesService {
   final String apiKey;
 
   Future<List<Place>> getNearbyMechanics(LatLng pos) async {
-    final url =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+    final url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
         '?location=${pos.latitude},${pos.longitude}'
         '&radius=20000'
         '&type=car_repair'

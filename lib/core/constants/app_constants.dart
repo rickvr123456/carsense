@@ -24,7 +24,7 @@ class AppConstants {
 
   // Storage Keys
   static const String errorHistoryKey = 'obd_errors';
-  
+
   // Environment Variables
   static const String envGeminiKey = 'GEMINI_API_KEY';
   static const String envAiKey = 'AI_API_KEY';

@@ -30,45 +30,50 @@ class _MapPageState extends ConsumerState<MapPage> {
 
   Future<void> _prepareMap() async {
     setState(() {
-      loading = true; 
+      loading = true;
       error = null;
     });
     try {
       // Permessi e posizione
       final perm = await Geolocator.requestPermission();
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        setState(() { 
-          error = 'Permesso posizione negato'; 
-          loading = false; 
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        setState(() {
+          error = 'Permesso posizione negato';
+          loading = false;
         });
         if (mounted) {
           ErrorHandler.showLocationError(
             context,
-            message: 'L\'app necessita dei permessi di localizzazione per mostrare le officine vicine. '
+            message:
+                'L\'app necessita dei permessi di localizzazione per mostrare le officine vicine. '
                 'Abilita i permessi nelle impostazioni del dispositivo.',
             onOpenSettings: () {
               // Potremmo aprire le impostazioni con un package come app_settings
-              ErrorHandler.showInfo(context, message: 'Vai in Impostazioni > App > CarSense > Permessi');
+              ErrorHandler.showInfo(context,
+                  message: 'Vai in Impostazioni > App > CarSense > Permessi');
             },
           );
         }
         return;
       }
-      
+
       final pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
       myPosition = LatLng(pos.latitude, pos.longitude);
-      
+
       final service = ref.read(placesServiceProvider);
       mechanics = await service.getNearbyMechanics(myPosition!);
-      
-      setState(() { loading = false; });
+
+      setState(() {
+        loading = false;
+      });
     } on LocationServiceDisabledException {
-      setState(() { 
-        error = 'Servizi di localizzazione disabilitati'; 
-        loading = false; 
+      setState(() {
+        error = 'Servizi di localizzazione disabilitati';
+        loading = false;
       });
       if (mounted) {
         ErrorHandler.showLocationError(
@@ -78,25 +83,26 @@ class _MapPageState extends ConsumerState<MapPage> {
         );
       }
     } on TimeoutException {
-      setState(() { 
-        error = 'Timeout nel recupero della posizione'; 
-        loading = false; 
+      setState(() {
+        error = 'Timeout nel recupero della posizione';
+        loading = false;
       });
       if (mounted) {
         ErrorHandler.showGenericError(
           context,
-          message: 'Timeout nel recupero della posizione GPS. Assicurati di essere all\'aperto e riprova.',
+          message:
+              'Timeout nel recupero della posizione GPS. Assicurati di essere all\'aperto e riprova.',
           onRetry: _prepareMap,
         );
       }
     } catch (e) {
-      setState(() { 
-        error = 'Errore caricamento mappa: ${e.toString()}'; 
-        loading = false; 
+      setState(() {
+        error = 'Errore caricamento mappa: ${e.toString()}';
+        loading = false;
       });
       if (mounted) {
         // Check if it's a network error
-        if (e.toString().contains('SocketException') || 
+        if (e.toString().contains('SocketException') ||
             e.toString().contains('Failed host lookup')) {
           ErrorHandler.showNetworkError(context, onRetry: _prepareMap);
         } else {

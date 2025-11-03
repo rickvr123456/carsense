@@ -14,9 +14,12 @@ final loggerProvider = Provider<Logger>((ref) {
   return globalLogger;
 });
 
-final geminiKeyProvider = Provider<String>((ref) => dotenv.env['GEMINI_API_KEY'] ?? '');
-final aiKeyProvider = Provider<String>((ref) => dotenv.env['AI_API_KEY'] ?? dotenv.env['GEMINI_API_KEY'] ?? '');
-final placesKeyProvider = Provider<String>((ref) => dotenv.env['PLACES_API_KEY'] ?? '');
+final geminiKeyProvider =
+    Provider<String>((ref) => dotenv.env['GEMINI_API_KEY'] ?? '');
+final aiKeyProvider = Provider<String>(
+    (ref) => dotenv.env['AI_API_KEY'] ?? dotenv.env['GEMINI_API_KEY'] ?? '');
+final placesKeyProvider =
+    Provider<String>((ref) => dotenv.env['PLACES_API_KEY'] ?? '');
 
 final geminiServiceProvider = Provider<GeminiService>((ref) {
   final key = ref.watch(geminiKeyProvider);

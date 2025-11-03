@@ -20,17 +20,17 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
   Widget build(BuildContext context) {
     final app = ref.watch(appStateProvider);
     final dtcs = app.dtcs;
-    
+
     // Get current DTC codes
     final currentDtcCodes = dtcs.map((d) => d.code).toList();
-    
+
     // Reset expanded list if DTCs changed (not just length, but actual codes)
-    if (expanded.length != dtcs.length || 
+    if (expanded.length != dtcs.length ||
         !_listsEqual(_previousDtcCodes, currentDtcCodes)) {
       expanded = List<bool>.filled(dtcs.length, false);
       _previousDtcCodes = currentDtcCodes;
     }
-    
+
     // Force rebuild when content changes (e.g., descriptions arrive from AI)
     // This ensures that the ListView rebuilds with updated data
 
@@ -58,21 +58,27 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                  const Icon(Icons.warning_amber,
+                      color: Colors.orange, size: 20),
                   const SizedBox(width: 5),
-                  Text('${dtcs.length}', style: const TextStyle(color: Colors.white)),
+                  Text('${dtcs.length}',
+                      style: const TextStyle(color: Colors.white)),
                 ],
               ),
             ),
             const Spacer(),
             // Pulsante Riprova AI se ci sono DTC non interpretati
-            if (dtcs.isNotEmpty && !_selectionMode && _hasUninterpretedDtcs(dtcs))
+            if (dtcs.isNotEmpty &&
+                !_selectionMode &&
+                _hasUninterpretedDtcs(dtcs))
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3660EF),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 onPressed: () {
@@ -87,8 +93,10 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade700,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
                 onPressed: () {
@@ -128,7 +136,9 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                     duration: const Duration(milliseconds: 180),
                     curve: Curves.easeInOut,
                     decoration: BoxDecoration(
-                      color: isExpanded ? const Color(0xFF233246) : const Color(0xFF222b35),
+                      color: isExpanded
+                          ? const Color(0xFF233246)
+                          : const Color(0xFF222b35),
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         if (isExpanded)
@@ -165,13 +175,15 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                                   });
                                 },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
                             child: Row(
                               children: [
                                 const CircleAvatar(
                                   backgroundColor: Color(0xFF232B37),
                                   radius: 20,
-                                  child: Icon(Icons.warning, color: Colors.orange, size: 27),
+                                  child: Icon(Icons.warning,
+                                      color: Colors.orange, size: 27),
                                 ),
                                 const SizedBox(width: 18),
                                 Text(
@@ -200,7 +212,9 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                                   ),
                                 if (!_selectionMode)
                                   Icon(
-                                    isExpanded ? Icons.expand_less : Icons.expand_more,
+                                    isExpanded
+                                        ? Icons.expand_less
+                                        : Icons.expand_more,
                                     color: Colors.white70,
                                     size: 26,
                                   ),
@@ -210,13 +224,15 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                         ),
                         if (isExpanded)
                           Padding(
-                            padding: const EdgeInsets.only(left: 33, right: 14, top: 8, bottom: 10),
+                            padding: const EdgeInsets.only(
+                                left: 33, right: 14, top: 8, bottom: 10),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (d.title != null && d.title!.isNotEmpty)
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         '\u2022 ',
@@ -239,8 +255,10 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                                       ),
                                     ],
                                   ),
-                                if (d.title != null && d.title!.isNotEmpty) const SizedBox(height: 5),
-                                if (d.description != null && d.description!.isNotEmpty)
+                                if (d.title != null && d.title!.isNotEmpty)
+                                  const SizedBox(height: 5),
+                                if (d.description != null &&
+                                    d.description!.isNotEmpty)
                                   SelectableText(
                                     d.description!,
                                     style: const TextStyle(
@@ -252,7 +270,8 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                                     ),
                                     maxLines: 5,
                                   ),
-                                if ((d.description == null || d.description!.isEmpty) &&
+                                if ((d.description == null ||
+                                        d.description!.isEmpty) &&
                                     (d.title == null || d.title!.isEmpty))
                                   const Text('Descrizione in caricamento…',
                                       style: TextStyle(color: Colors.white70)),
@@ -262,24 +281,35 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                                   children: [
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF3660EF),
+                                        backgroundColor:
+                                            const Color(0xFF3660EF),
                                         elevation: 0,
-                                        padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 19, vertical: 6),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(19),
+                                          borderRadius:
+                                              BorderRadius.circular(19),
                                         ),
                                       ),
                                       onPressed: () {
                                         // Set the AI prompt
-                                        ref.read(aiInitialPromptProvider.notifier).state =
+                                        ref
+                                                .read(aiInitialPromptProvider
+                                                    .notifier)
+                                                .state =
                                             'Ho un problema con il codice ${d.code}: ${d.title ?? ''}. ${d.description ?? ''}. Puoi aiutarmi a capire la causa e la possibile soluzione?';
                                         // Navigate to AI tab (index 2)
-                                        ref.read(navigationIndexProvider.notifier).state = 2;
+                                        ref
+                                            .read(navigationIndexProvider
+                                                .notifier)
+                                            .state = 2;
                                       },
                                       child: const Text(
                                         'Chiedi all\'IA',
                                         style: TextStyle(
-                                            fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14.5,
+                                            color: Colors.white),
                                       ),
                                     ),
                                   ],
@@ -306,8 +336,12 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                           content: Text(
                               'Sei sicuro di voler cancellare ${_selected.length} errore(i)?'),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sì')),
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('No')),
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Sì')),
                           ],
                         ),
                       );
@@ -321,7 +355,8 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                         if (context.mounted) {
                           ErrorHandler.showSuccess(
                             context,
-                            message: '$count errore(i) cancellato(i) con successo',
+                            message:
+                                '$count errore(i) cancellato(i) con successo',
                           );
                         }
                       }

@@ -81,9 +81,11 @@ class _HistoryPageState extends State<HistoryPage> {
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, i) {
                     final e = entries[i];
-                    final date = DateFormatter.parseIso8601(e['timestamp']) ?? DateTime.now();
+                    final date = DateFormatter.parseIso8601(e['timestamp']) ??
+                        DateTime.now();
                     return ListTile(
-                      leading: const Icon(Icons.warning_amber, color: AppColors.warning),
+                      leading: const Icon(Icons.warning_amber,
+                          color: AppColors.warning),
                       title: Text(e['code']),
                       subtitle: Text(DateFormatter.formatShortDateTime(date)),
                     );

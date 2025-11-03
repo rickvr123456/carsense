@@ -25,7 +25,8 @@ class AiMessage {
       );
 
   @override
-  String toString() => 'AiMessage(role: $role, text: ${text.substring(0, text.length.clamp(0, 50))}..., isLoading: $isLoading)';
+  String toString() =>
+      'AiMessage(role: $role, text: ${text.substring(0, text.length.clamp(0, 50))}..., isLoading: $isLoading)';
 }
 
 class AiChatService extends ChangeNotifier {
@@ -76,7 +77,8 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
       lastError = 'Nessuna connessione a Internet';
       globalLogger.e('[AiChat] Nessuna connessione a Internet');
       _replaceLoadingWith(
-        AiMessage(role: 'model', text: 'Errore: Nessuna connessione a Internet'),
+        AiMessage(
+            role: 'model', text: 'Errore: Nessuna connessione a Internet'),
       );
       sending = false;
       notifyListeners();
@@ -85,12 +87,12 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
 
     try {
       await _chat.sendMessage(Content.text(_systemPrompt));
-      
+
       // Add timeout to prevent hanging
       final stream = _chat
           .sendMessageStream(Content.text(text))
           .timeout(const Duration(seconds: 30));
-          
+
       final buffer = StringBuffer();
 
       await for (final chunk in stream) {
@@ -105,21 +107,23 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
       globalLogger.e('[AiChat TIMEOUT] Request timed out');
       lastError = 'Timeout: la richiesta ha impiegato troppo tempo';
       _replaceLoadingWith(
-        AiMessage(role: 'model', text: 'Timeout: la richiesta ha impiegato troppo tempo. Riprova.'),
+        AiMessage(
+            role: 'model',
+            text: 'Timeout: la richiesta ha impiegato troppo tempo. Riprova.'),
       );
     } catch (e, st) {
       globalLogger.e('[AiChat ERROR] $e');
       globalLogger.e(st.toString());
-      
+
       // Determine if it's a network error
-      if (e.toString().contains('SocketException') || 
+      if (e.toString().contains('SocketException') ||
           e.toString().contains('NetworkException') ||
           e.toString().contains('Failed host lookup')) {
         lastError = 'Nessuna connessione a Internet';
       } else {
         lastError = 'Errore nella comunicazione con l\'AI';
       }
-      
+
       _replaceLoadingWith(
         AiMessage(role: 'model', text: 'Si è verificato un errore. Riprova.'),
       );
@@ -130,7 +134,8 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
   }
 
   void _updateStreaming(String text) {
-    final idx = _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
+    final idx =
+        _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
     if (idx != -1) {
       _history[idx] = AiMessage(role: 'model', text: text, isLoading: true);
     }
@@ -138,7 +143,8 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
   }
 
   void _finalizeStreaming(String text) {
-    final idx = _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
+    final idx =
+        _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
     if (idx != -1) {
       _history[idx] = AiMessage(role: 'model', text: text, isLoading: false);
     }

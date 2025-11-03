@@ -23,7 +23,8 @@ class AppStrings {
   static const String genericError = 'Si è verificato un errore. Riprova.';
   static const String loadingMapError = 'Errore caricamento mappa';
   static const String locationPermissionDenied = 'Permesso posizione negato';
-  static const String locationServiceDisabled = 'Servizi di localizzazione disabilitati';
+  static const String locationServiceDisabled =
+      'Servizi di localizzazione disabilitati';
 
   // AI Chat
   static const String aiSupport = 'Supporto IA';
@@ -37,7 +38,7 @@ class AppStrings {
   static const String deleteErrors = 'Cancella errori';
   static const String deleteSelected = 'Cancella selezionati';
   static const String confirmDelete = 'Conferma cancellazione';
-  static String confirmDeleteMessage(int count) => 
+  static String confirmDeleteMessage(int count) =>
       'Sei sicuro di voler cancellare $count errore(i)?';
   static const String yes = 'Sì';
   static const String no = 'No';
@@ -46,7 +47,8 @@ class AppStrings {
   // History
   static const String errorHistory = 'Cronologia Errori';
   static const String clearAllHistory = 'Cancella tutta la cronologia';
-  static const String confirmClearHistory = 'Sei sicuro di voler cancellare tutti i record?';
+  static const String confirmClearHistory =
+      'Sei sicuro di voler cancellare tutti i record?';
   static const String noErrorsRecorded = 'Nessun errore registrato';
 
   // Map
@@ -56,10 +58,10 @@ class AppStrings {
 
   // Info
   static const String info = 'Informazioni';
-  static const String infoDescription1 = 
+  static const String infoDescription1 =
       'CarSense è un\'applicazione pensata per tutti gli appassionati di motori che intendono approcciarsi al mondo della meccanica in maniera semplice ma non superficiale.';
-  static const String infoDescription2 = 
+  static const String infoDescription2 =
       'Attraverso la scansione della centralina tramite presa OBD2, CarHealth restituirà una panoramica completa di tutti gli errori riportati dalla centralina della propria autovettura, con una spiegazione dettagliata dell\'errore, delle probabili cause e delle possibili soluzioni.';
-  static const String infoDescription3 = 
+  static const String infoDescription3 =
       'Inoltre, è integrata un\'intelligenza artificiale che aiuta l\'utente nella comprensione del problema, e che è in grado di rispondere alle richieste dell\'utente riguardo eventuali dubbi sul proprio veicolo';
 }

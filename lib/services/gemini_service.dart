@@ -23,16 +23,18 @@ class GeminiService {
     final prompt = _buildPrompt(dtcCodes);
 
     try {
-      globalLogger.d('[Gemini] Invio prompt: ${prompt.substring(0, prompt.length.clamp(0, 300))}');
+      globalLogger.d(
+          '[Gemini] Invio prompt: ${prompt.substring(0, prompt.length.clamp(0, 300))}');
       final contents = [Content.text(prompt)];
-      
+
       // Add timeout to prevent hanging requests
       final response = await model
           .generateContent(contents)
           .timeout(AppConstants.networkTimeout);
 
       final text = response.text;
-      globalLogger.d('[Gemini] Risposta: ${text?.substring(0, text.length.clamp(0, 400)) ?? "<vuoto>"}');
+      globalLogger.d(
+          '[Gemini] Risposta: ${text?.substring(0, text.length.clamp(0, 400)) ?? "<vuoto>"}');
 
       return _parseJsonResponse(text ?? '');
     } on TimeoutException {
@@ -70,7 +72,8 @@ Codici: ${dtcCodes.join(', ')}
           if (value is Map<String, dynamic>) {
             final title = value['title']?.toString();
             final description = value['description']?.toString();
-            result[key.toUpperCase()] = Dtc(key.toUpperCase(), title: title, description: description);
+            result[key.toUpperCase()] =
+                Dtc(key.toUpperCase(), title: title, description: description);
           }
         });
         globalLogger.d('[Gemini] Parsed ${result.length} DTC dettagliati.');
@@ -90,10 +93,12 @@ Codici: ${dtcCodes.join(', ')}
               if (value is Map<String, dynamic>) {
                 final title = value['title']?.toString();
                 final description = value['description']?.toString();
-                result[key.toUpperCase()] = Dtc(key.toUpperCase(), title: title, description: description);
+                result[key.toUpperCase()] = Dtc(key.toUpperCase(),
+                    title: title, description: description);
               }
             });
-            globalLogger.d('[Gemini] Parsed (fallback) ${result.length} DTC dettagliati.');
+            globalLogger.d(
+                '[Gemini] Parsed (fallback) ${result.length} DTC dettagliati.');
             return result;
           }
         } catch (e2) {

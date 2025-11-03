@@ -31,9 +31,7 @@ class Dtc {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Dtc &&
-          runtimeType == other.runtimeType &&
-          code == other.code;
+      other is Dtc && runtimeType == other.runtimeType && code == other.code;
 
   @override
   int get hashCode => code.hashCode;

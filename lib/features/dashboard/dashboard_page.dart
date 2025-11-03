@@ -21,7 +21,7 @@ class _DashboardView extends ConsumerWidget {
     final theme = Theme.of(context);
     final state = ref.watch(appStateProvider).dashboard;
     final connected = state.connected;
-    
+
     // Show network error dialog
     if (state.lastNetworkError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -32,7 +32,7 @@ class _DashboardView extends ConsumerWidget {
         state.lastNetworkError = null;
       });
     }
-    
+
     // Show AI error dialog
     if (state.hasAiError && state.lastAiError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -45,95 +45,93 @@ class _DashboardView extends ConsumerWidget {
         state.lastAiError = null;
       });
     }
-    
-        return Scaffold(
-          backgroundColor: const Color(0xFF0F1418),
-          appBar: AppBar(
-            title: const Text('CarSense'),
-            centerTitle: true,
-            backgroundColor: const Color(0xFF0F1418),
-            elevation: 0,
-            actions: [
-              IconButton(
-                tooltip: 'Informazioni',
-                icon:
-                    const Icon(Icons.info_outline_rounded, color: Colors.green),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const InfoPage()),
-                  );
-                },
-              ),
-            ],
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F1418),
+      appBar: AppBar(
+        title: const Text('CarSense'),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF0F1418),
+        elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Informazioni',
+            icon: const Icon(Icons.info_outline_rounded, color: Colors.green),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const InfoPage()),
+              );
+            },
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _MetricsCard(
+              rpm: connected ? '${state.rpm}' : '----',
+              speed: connected ? '${state.speed}' : '----',
+              battery: connected ? '${state.batteryV}' : '----',
+              coolant: connected ? '${state.coolantC}' : '----',
+            ),
+            const SizedBox(height: 24),
+            Row(
               children: [
-                _MetricsCard(
-                  rpm: connected ? '${state.rpm}' : '----',
-                  speed: connected ? '${state.speed}' : '----',
-                  battery: connected ? '${state.batteryV}' : '----',
-                  coolant: connected ? '${state.coolantC}' : '----',
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          if (connected) {
-                            state.rescan();
-                            ErrorHandler.showInfo(
-                              context,
-                              message: 'Scansione in corso...',
-                            );
-                          } else {
-                            state.toggleConnectionAndScan();
-                            ErrorHandler.showSuccess(
-                              context,
-                              message: 'Connesso! Scansione avviata',
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2BE079),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        icon: const Icon(Icons.cable_rounded),
-                        label: Text(
-                            connected ? 'Scansiona' : 'Connetti e scansiona'),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      if (connected) {
+                        state.rescan();
+                        ErrorHandler.showInfo(
+                          context,
+                          message: 'Scansione in corso...',
+                        );
+                      } else {
+                        state.toggleConnectionAndScan();
+                        ErrorHandler.showSuccess(
+                          context,
+                          message: 'Connesso! Scansione avviata',
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2BE079),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    _Dot(connected ? Colors.greenAccent : Colors.redAccent),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  connected ? 'CONNESSO' : 'NON CONNESSO',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white70,
-                    letterSpacing: 1.2,
+                    icon: const Icon(Icons.cable_rounded),
+                    label:
+                        Text(connected ? 'Scansiona' : 'Connetti e scansiona'),
                   ),
                 ),
-                const SizedBox(height: 12),
-                if (connected)
-                  Text(
-                    state.dtcs.isEmpty
-                        ? 'Nessun errore rilevato'
-                        : '${state.dtcs.length} errori rilevati',
-                    style: theme.textTheme.bodyLarge
-                        ?.copyWith(color: Colors.white),
-                  ),
+                const SizedBox(width: 12),
+                _Dot(connected ? Colors.greenAccent : Colors.redAccent),
               ],
             ),
-          ),
-        );
+            const SizedBox(height: 8),
+            Text(
+              connected ? 'CONNESSO' : 'NON CONNESSO',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white70,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (connected)
+              Text(
+                state.dtcs.isEmpty
+                    ? 'Nessun errore rilevato'
+                    : '${state.dtcs.length} errori rilevati',
+                style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -162,7 +160,9 @@ class _MetricsCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
+            Text(label,
+                style: const TextStyle(color: Colors.white70),
+                textAlign: TextAlign.center),
           ],
         );
 

@@ -53,7 +53,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                   fontWeight: FontWeight.w600,
                 );
               }),
-              iconTheme: WidgetStateProperty.resolveWith<IconThemeData>((states) {
+              iconTheme:
+                  WidgetStateProperty.resolveWith<IconThemeData>((states) {
                 if (states.contains(WidgetState.selected)) {
                   return const IconThemeData(color: _selectedColor);
                 }
@@ -67,11 +68,12 @@ class _AppShellState extends ConsumerState<AppShell> {
               backgroundColor: const Color(0xFF0F1418),
               indicatorColor: Colors.transparent,
               selectedIndex: index,
-              onDestinationSelected: isScanning 
-                  ? null 
+              onDestinationSelected: isScanning
+                  ? null
                   : (i) => ref.read(navigationIndexProvider.notifier).state = i,
               destinations: const [
-                NavigationDestination(icon: Icon(Icons.speed), label: 'Dashboard'),
+                NavigationDestination(
+                    icon: Icon(Icons.speed), label: 'Dashboard'),
                 NavigationDestination(
                     icon: Icon(Icons.warning_amber), label: 'Problemi'),
                 NavigationDestination(icon: Icon(Icons.smart_toy), label: 'AI'),

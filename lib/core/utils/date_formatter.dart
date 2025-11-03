@@ -6,14 +6,16 @@ class DateFormatter {
 
   static final DateFormat _shortDate = DateFormat('dd/MM/yyyy');
   static final DateFormat _shortDateTime = DateFormat('dd/MM/yyyy HH:mm');
-  static final DateFormat _longDateTime = DateFormat('dd MMMM yyyy HH:mm', 'it_IT');
+  static final DateFormat _longDateTime =
+      DateFormat('dd MMMM yyyy HH:mm', 'it_IT');
   static final DateFormat _timeOnly = DateFormat('HH:mm');
 
   /// Format date as dd/MM/yyyy
   static String formatShortDate(DateTime date) => _shortDate.format(date);
 
   /// Format date as dd/MM/yyyy HH:mm
-  static String formatShortDateTime(DateTime date) => _shortDateTime.format(date);
+  static String formatShortDateTime(DateTime date) =>
+      _shortDateTime.format(date);
 
   /// Format date as dd MMMM yyyy HH:mm
   static String formatLongDateTime(DateTime date) => _longDateTime.format(date);

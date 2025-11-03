@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'riverpod_providers.dart';
+import 'core/theme/app_colors.dart';
 import 'core/widgets/fullscreen_loading.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'features/problems/problems_page.dart';
@@ -17,8 +18,6 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  static const Color _selectedColor = Color(0xFF2BE079);
-
   final pages = const [
     DashboardPage(),
     ProblemsPage(),
@@ -44,7 +43,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                   WidgetStateProperty.resolveWith<TextStyle>((states) {
                 if (states.contains(WidgetState.selected)) {
                   return const TextStyle(
-                    color: _selectedColor,
+                    color: AppColors.primary,
                     fontWeight: FontWeight.w600,
                   );
                 }
@@ -56,7 +55,7 @@ class _AppShellState extends ConsumerState<AppShell> {
               iconTheme:
                   WidgetStateProperty.resolveWith<IconThemeData>((states) {
                 if (states.contains(WidgetState.selected)) {
-                  return const IconThemeData(color: _selectedColor);
+                  return const IconThemeData(color: AppColors.primary);
                 }
                 return const IconThemeData(color: Colors.white70);
               }),

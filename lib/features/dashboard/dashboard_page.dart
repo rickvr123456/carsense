@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../riverpod_providers.dart';
 import '../../core/utils/error_handler.dart';
-import '../../services/gemini_singleton.dart';
 import '../info/info_page.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -23,11 +22,12 @@ class _DashboardView extends ConsumerWidget {
     final state = ref.watch(appStateProvider).dashboard;
     final connected = state.connected;
 
-    // Attach Gemini from singleton if not already attached
-    if (state.gemini == null && geminiInstance != null) {
+    // Attach Gemini from provider if not already attached
+    if (state.gemini == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (state.gemini == null) {
-          state.attachGemini(geminiInstance!);
+          final gemini = ref.read(geminiServiceProvider);
+          state.attachGemini(gemini);
         }
       });
     }

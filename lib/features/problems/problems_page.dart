@@ -4,48 +4,42 @@ import '../../riverpod_providers.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/models/dtc.dart';
 
-class ProblemsPage extends ConsumerStatefulWidget {
+class ProblemsPage extends ConsumerWidget {
   const ProblemsPage({super.key});
-  @override
-  ConsumerState<ProblemsPage> createState() => _ProblemsPageState();
-}
-
-class _ProblemsPageState extends ConsumerState<ProblemsPage> {
-  bool _selectionMode = false;
-  final Set<String> _selected = {};
-  List<bool> expanded = [];
-  List<String> _previousDtcCodes = [];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final app = ref.watch(appStateProvider);
     final dtcs = app.dtcs;
+    final selectionMode = ref.watch(problemsSelectionModeProvider);
+    final selected = ref.watch(problemsSelectedDtcsProvider);
+    final expandedMap = ref.watch(problemsExpandedListProvider);
 
-    // Get current DTC codes
+    // Ensure expanded state is synchronized with DTCs
     final currentDtcCodes = dtcs.map((d) => d.code).toList();
-
-    // Reset expanded list if DTCs changed (not just length, but actual codes)
-    if (expanded.length != dtcs.length ||
-        !_listsEqual(_previousDtcCodes, currentDtcCodes)) {
-      expanded = List<bool>.filled(dtcs.length, false);
-      _previousDtcCodes = currentDtcCodes;
+    if (expandedMap.length != dtcs.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final newMap = <String, bool>{};
+        for (final code in currentDtcCodes) {
+          newMap[code] = expandedMap[code] ?? false;
+        }
+        // Remove codes that no longer exist
+        newMap.removeWhere((code, _) => !currentDtcCodes.contains(code));
+        ref.read(problemsExpandedListProvider.notifier).state = newMap;
+      });
     }
-
-    // Force rebuild when content changes (e.g., descriptions arrive from AI)
-    // This ensures that the ListView rebuilds with updated data
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            if (_selectionMode)
+            if (selectionMode)
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white70),
                 onPressed: () {
-                  setState(() {
-                    _selectionMode = false;
-                    _selected.clear();
-                  });
+                  ref.read(problemsSelectionModeProvider.notifier).state =
+                      false;
+                  ref.read(problemsSelectedDtcsProvider.notifier).state = {};
                 },
               ),
             const SizedBox(width: 8),
@@ -69,7 +63,7 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
             const Spacer(),
             // Pulsante Riprova AI se ci sono DTC non interpretati
             if (dtcs.isNotEmpty &&
-                !_selectionMode &&
+                !selectionMode &&
                 _hasUninterpretedDtcs(dtcs))
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -88,7 +82,7 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                 label: const Text('Riprova AI', style: TextStyle(fontSize: 12)),
               ),
             const SizedBox(width: 8),
-            if (dtcs.isNotEmpty && !_selectionMode)
+            if (dtcs.isNotEmpty && !selectionMode)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade700,
@@ -100,10 +94,9 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                   elevation: 0,
                 ),
                 onPressed: () {
-                  setState(() {
-                    _selectionMode = true;
-                    _selected.clear();
-                  });
+                  ref.read(problemsSelectionModeProvider.notifier).state =
+                      true;
+                  ref.read(problemsSelectedDtcsProvider.notifier).state = {};
                 },
                 child: const Text(
                   'Cancella errori',
@@ -128,11 +121,11 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, i) {
                   final d = dtcs[i];
-                  final bool isExpanded = expanded[i];
-                  final bool isSelected = _selected.contains(d.code);
+                  final isExpanded = expandedMap[d.code] ?? false;
+                  final isSelected = selected.contains(d.code);
 
                   return AnimatedContainer(
-                    key: ValueKey(d.code), // Key stabile basata solo sul codice
+                    key: ValueKey(d.code),
                     duration: const Duration(milliseconds: 180),
                     curve: Curves.easeInOut,
                     decoration: BoxDecoration(
@@ -159,20 +152,32 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                       children: [
                         InkWell(
                           borderRadius: BorderRadius.circular(14),
-                          onTap: _selectionMode
+                          onTap: selectionMode
                               ? () {
-                                  setState(() {
-                                    if (isSelected) {
-                                      _selected.remove(d.code);
-                                    } else {
-                                      _selected.add(d.code);
-                                    }
-                                  });
+                                  if (isSelected) {
+                                    final newSet = Set<String>.from(selected);
+                                    newSet.remove(d.code);
+                                    ref
+                                        .read(problemsSelectedDtcsProvider
+                                            .notifier)
+                                        .state = newSet;
+                                  } else {
+                                    final newSet = Set<String>.from(selected);
+                                    newSet.add(d.code);
+                                    ref
+                                        .read(problemsSelectedDtcsProvider
+                                            .notifier)
+                                        .state = newSet;
+                                  }
                                 }
                               : () {
-                                  setState(() {
-                                    expanded[i] = !isExpanded;
-                                  });
+                                  final newMap =
+                                      Map<String, bool>.from(expandedMap);
+                                  newMap[d.code] = !isExpanded;
+                                  ref
+                                      .read(problemsExpandedListProvider
+                                          .notifier)
+                                      .state = newMap;
                                 },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -197,20 +202,32 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (_selectionMode)
+                                if (selectionMode)
                                   Checkbox(
                                     value: isSelected,
                                     onChanged: (_) {
-                                      setState(() {
-                                        if (isSelected) {
-                                          _selected.remove(d.code);
-                                        } else {
-                                          _selected.add(d.code);
-                                        }
-                                      });
+                                      if (isSelected) {
+                                        final newSet =
+                                            Set<String>.from(selected);
+                                        newSet.remove(d.code);
+                                        ref
+                                            .read(
+                                                problemsSelectedDtcsProvider
+                                                    .notifier)
+                                            .state = newSet;
+                                      } else {
+                                        final newSet =
+                                            Set<String>.from(selected);
+                                        newSet.add(d.code);
+                                        ref
+                                            .read(
+                                                problemsSelectedDtcsProvider
+                                                    .notifier)
+                                            .state = newSet;
+                                      }
                                     },
                                   ),
-                                if (!_selectionMode)
+                                if (!selectionMode)
                                   Icon(
                                     isExpanded
                                         ? Icons.expand_less
@@ -292,13 +309,11 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                                         ),
                                       ),
                                       onPressed: () {
-                                        // Set the AI prompt
                                         ref
-                                                .read(aiInitialPromptProvider
-                                                    .notifier)
-                                                .state =
+                                            .read(aiInitialPromptProvider
+                                                .notifier)
+                                            .state =
                                             'Ho un problema con il codice ${d.code}: ${d.title ?? ''}. ${d.description ?? ''}. Puoi aiutarmi a capire la causa e la possibile soluzione?';
-                                        // Navigate to AI tab (index 2)
                                         ref
                                             .read(navigationIndexProvider
                                                 .notifier)
@@ -323,10 +338,10 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                 },
               ),
       ),
-      floatingActionButton: dtcs.isEmpty || !_selectionMode
+      floatingActionButton: dtcs.isEmpty || !selectionMode
           ? null
           : FloatingActionButton.extended(
-              onPressed: _selected.isEmpty
+              onPressed: selected.isEmpty
                   ? null
                   : () async {
                       final confirmed = await showDialog<bool>(
@@ -334,7 +349,7 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                         builder: (ctx) => AlertDialog(
                           title: const Text('Conferma cancellazione'),
                           content: Text(
-                              'Sei sicuro di voler cancellare ${_selected.length} errore(i)?'),
+                              'Sei sicuro di voler cancellare ${selected.length} errore(i)?'),
                           actions: [
                             TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
@@ -345,13 +360,13 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
                           ],
                         ),
                       );
-                      if (confirmed == true && mounted) {
-                        final count = _selected.length;
-                        app.dashboard.removeDtcCodes(_selected);
-                        setState(() {
-                          _selectionMode = false;
-                          _selected.clear();
-                        });
+                      if (confirmed == true && context.mounted) {
+                        final count = selected.length;
+                        app.dashboard.removeDtcCodes(selected);
+                        ref.read(problemsSelectionModeProvider.notifier).state =
+                            false;
+                        ref.read(problemsSelectedDtcsProvider.notifier).state =
+                            {};
                         if (context.mounted) {
                           ErrorHandler.showSuccess(
                             context,
@@ -367,16 +382,6 @@ class _ProblemsPageState extends ConsumerState<ProblemsPage> {
     );
   }
 
-  /// Helper method to compare two lists of strings
-  bool _listsEqual(List<String> a, List<String> b) {
-    if (a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
-
-  /// Controlla se ci sono DTC non ancora interpretati
   bool _hasUninterpretedDtcs(List<Dtc> dtcs) {
     return dtcs.any((d) => d.title == null || d.title!.isEmpty);
   }

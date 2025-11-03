@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../../core/models/dtc.dart';
@@ -6,9 +7,36 @@ import '../../services/gemini_service.dart';
 import '../../services/network_helper.dart';
 import '../../riverpod_providers.dart';
 
+/// Enum per i tipi di errore del dashboard
+enum ErrorType { none, network, ai, timeout }
+
+/// Classe che rappresenta lo stato di errore
+class ErrorState {
+  const ErrorState({
+    required this.type,
+    this.message,
+  });
+
+  final ErrorType type;
+  final String? message;
+
+  bool get hasError => type != ErrorType.none;
+
+  ErrorState copyWith({
+    ErrorType? type,
+    String? message,
+  }) =>
+      ErrorState(
+        type: type ?? this.type,
+        message: message ?? this.message,
+      );
+
+  static const ErrorState none = ErrorState(type: ErrorType.none);
+}
+
 class DashboardState extends ChangeNotifier {
   bool connected = false;
-  bool isScanning = false; // NEW: Track scanning state
+  bool isScanning = false;
   int rpm = 0;
   int speed = 0;
   double batteryV = 0;
@@ -19,27 +47,61 @@ class DashboardState extends ChangeNotifier {
 
   final _history = ErrorHistoryService();
 
-  // Network error state
-  String? lastNetworkError;
-  String? lastAiError;
-  bool hasAiError = false;
+  // Unified error state
+  ErrorState errorState = ErrorState.none;
+
+  // Deprecated: kept for backward compatibility during migration
+  String? get lastNetworkError =>
+      errorState.type == ErrorType.network ? errorState.message : null;
+  set lastNetworkError(String? value) {
+    if (value != null) {
+      _setError(ErrorType.network, value);
+    } else {
+      _clearError();
+    }
+  }
+
+  String? get lastAiError =>
+      errorState.type == ErrorType.ai ? errorState.message : null;
+  set lastAiError(String? value) {
+    if (value != null) {
+      _setError(ErrorType.ai, value);
+    } else {
+      _clearError();
+    }
+  }
+
+  bool get hasAiError => errorState.type == ErrorType.ai;
+  set hasAiError(bool value) {
+    if (value && errorState.type != ErrorType.ai) {
+      _setError(ErrorType.ai, 'Errore AI');
+    } else if (!value) {
+      _clearError();
+    }
+  }
 
   GeminiService? _gemini;
   GeminiService? get gemini => _gemini;
-  
+
   void attachGemini(GeminiService service) {
     _gemini = service;
     globalLogger.d('[Dashboard] GeminiService collegato.');
   }
 
+  void _setError(ErrorType type, String message) {
+    errorState = ErrorState(type: type, message: message);
+    notifyListeners();
+  }
+
+  void _clearError() {
+    errorState = ErrorState.none;
+    notifyListeners();
+  }
+
   void toggleConnectionAndScan() {
     connected = !connected;
     if (connected) {
-      isScanning = true;
-      notifyListeners();
-      _simulateLiveValues();
-      notifyListeners(); // Notify immediately after setting live values
-      _generateRandomDTCs();
+      _performScan();
     } else {
       _clearLiveValues();
       notifyListeners();
@@ -48,11 +110,15 @@ class DashboardState extends ChangeNotifier {
 
   void rescan() {
     if (!connected) return;
+    _performScan();
+  }
+
+  /// Esegue la scansione: simula valori, genera DTC e chiama AI
+  void _performScan() {
     isScanning = true;
-    notifyListeners();
     _simulateLiveValues();
-    notifyListeners(); // Notify immediately after setting live values
     _generateRandomDTCs();
+    notifyListeners();
   }
 
   /// Riprova a interpretare solo i DTC non ancora interpretati
@@ -104,7 +170,6 @@ class DashboardState extends ChangeNotifier {
       _dtcs.add(dtc);
       _history.addError(code);
     }
-    notifyListeners(); // Notify immediately after adding DTCs (before AI descriptions)
     _describeWithAI();
   }
 
@@ -126,27 +191,24 @@ class DashboardState extends ChangeNotifier {
     // Check network connectivity
     final hasNetwork = await NetworkHelper.hasConnection();
     if (!hasNetwork) {
-      lastNetworkError = 'Nessuna connessione a Internet';
-      hasAiError = false;
+      _setError(ErrorType.network, 'Nessuna connessione a Internet');
       isScanning = false;
       globalLogger.e('[Dashboard] Nessuna connessione a Internet');
-      notifyListeners();
       return;
     }
 
     try {
-      lastNetworkError = null;
-      lastAiError = null;
-      hasAiError = false;
+      _clearError();
       final codes = _dtcs.map((e) => e.code).toList();
       globalLogger.d('[Dashboard] Richiedo descrizioni a Gemini per: $codes');
       final map = await _gemini!.describeDtcs(codes);
       if (map.isEmpty) {
         globalLogger.d('[Dashboard] Nessuna descrizione ricevuta da Gemini.');
-        lastAiError = 'L\'AI non ha fornito descrizioni per i codici rilevati.';
-        hasAiError = true;
+        _setError(
+          ErrorType.ai,
+          'L\'AI non ha fornito descrizioni per i codici rilevati.',
+        );
         isScanning = false;
-        notifyListeners();
         return;
       }
       // Replace DTCs with updated copies instead of mutating
@@ -163,14 +225,15 @@ class DashboardState extends ChangeNotifier {
       globalLogger.d('[Dashboard] Descrizioni AI impostate.');
       isScanning = false;
       notifyListeners();
+    } on TimeoutException {
+      _setError(ErrorType.timeout, 'Timeout: la richiesta ha impiegato troppo tempo');
+      isScanning = false;
+      globalLogger.e('[Dashboard][TIMEOUT]');
     } catch (e, st) {
-      lastNetworkError = null;
-      lastAiError = e.toString();
-      hasAiError = true;
+      _setError(ErrorType.ai, e.toString());
       isScanning = false;
       globalLogger.e('[Dashboard][ERRORE AI] $e');
       globalLogger.e(st.toString());
-      notifyListeners();
     }
   }
 }

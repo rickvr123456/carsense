@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'services/ai_chat_service.dart';
+import 'services/gemini_service.dart';
 import 'services/places_service.dart';
 import 'app_state.dart';
 
@@ -35,6 +36,11 @@ final aiChatServiceProvider = ChangeNotifierProvider<AiChatService>((ref) {
   return AiChatService(apiKey: key);
 });
 
+final geminiServiceProvider = Provider<GeminiService>((ref) {
+  final key = ref.watch(aiKeyProvider);
+  return GeminiService(apiKey: key);
+});
+
 final placesServiceProvider = Provider<PlacesService>((ref) {
   final key = ref.watch(placesKeyProvider);
   return PlacesService(key);
@@ -49,3 +55,8 @@ final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
 // Provider for AI initial prompt (used when navigating from problems page)
 final aiInitialPromptProvider = StateProvider<String?>((ref) => null);
+
+// Provider for problems page UI state
+final problemsSelectionModeProvider = StateProvider<bool>((ref) => false);
+final problemsSelectedDtcsProvider = StateProvider<Set<String>>((ref) => {});
+final problemsExpandedListProvider = StateProvider<Map<String, bool>>((ref) => {});

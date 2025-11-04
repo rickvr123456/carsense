@@ -1,37 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../app_state.dart';
-import '../ai/ai_chat_page.dart'; // aggiunto per la navigazione
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../riverpod_providers.dart';
+import '../../core/utils/error_handler.dart';
+import '../../core/models/dtc.dart';
 
-class ProblemsPage extends StatefulWidget {
+class ProblemsPage extends ConsumerWidget {
   const ProblemsPage({super.key});
-  @override
-  State<ProblemsPage> createState() => _ProblemsPageState();
-}
-
-class _ProblemsPageState extends State<ProblemsPage> {
-  bool _selectionMode = false;
-  final Set<String> _selected = {};
-  List<bool> expanded = [];
 
   @override
-  Widget build(BuildContext context) {
-    final app = context.watch<AppState>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final app = ref.watch(appStateProvider);
     final dtcs = app.dtcs;
-    if (expanded.length != dtcs.length) expanded = List<bool>.filled(dtcs.length, false);
+    final selectionMode = ref.watch(problemsSelectionModeProvider);
+    final selected = ref.watch(problemsSelectedDtcsProvider);
+    final expandedMap = ref.watch(problemsExpandedListProvider);
+
+    // Ensure expanded state is synchronized with DTCs
+    final currentDtcCodes = dtcs.map((d) => d.code).toList();
+    if (expandedMap.length != dtcs.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final newMap = <String, bool>{};
+        for (final code in currentDtcCodes) {
+          newMap[code] = expandedMap[code] ?? false;
+        }
+        // Remove codes that no longer exist
+        newMap.removeWhere((code, _) => !currentDtcCodes.contains(code));
+        ref.read(problemsExpandedListProvider.notifier).state = newMap;
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            if (_selectionMode)
+            if (selectionMode)
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white70),
                 onPressed: () {
-                  setState(() {
-                    _selectionMode = false;
-                    _selected.clear();
-                  });
+                  ref.read(problemsSelectionModeProvider.notifier).state =
+                      false;
+                  ref.read(problemsSelectedDtcsProvider.notifier).state = {};
                 },
               ),
             const SizedBox(width: 8),
@@ -44,27 +52,50 @@ class _ProblemsPageState extends State<ProblemsPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber, color: Colors.orange, size: 20),
+                  const Icon(Icons.warning_amber,
+                      color: Colors.orange, size: 20),
                   const SizedBox(width: 5),
-                  Text('${dtcs.length}', style: const TextStyle(color: Colors.white)),
+                  Text('${dtcs.length}',
+                      style: const TextStyle(color: Colors.white)),
                 ],
               ),
             ),
             const Spacer(),
-            if (dtcs.isNotEmpty && !_selectionMode)
+            if (dtcs.isNotEmpty &&
+                !selectionMode &&
+                _hasUninterpretedDtcs(dtcs))
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3660EF),
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  app.dashboard.retryAiDescription();
+                },
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('Riprova AI', style: TextStyle(fontSize: 12)),
+              ),
+            const SizedBox(width: 8),
+            if (dtcs.isNotEmpty && !selectionMode)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade700,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
                 onPressed: () {
-                  setState(() {
-                    _selectionMode = true;
-                    _selected.clear();
-                  });
+                  ref.read(problemsSelectionModeProvider.notifier).state =
+                      true;
+                  ref.read(problemsSelectedDtcsProvider.notifier).state = {};
                 },
                 child: const Text(
                   'Cancella errori',
@@ -89,21 +120,24 @@ class _ProblemsPageState extends State<ProblemsPage> {
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, i) {
                   final d = dtcs[i];
-                  final bool isExpanded = expanded[i];
-                  final bool isSelected = _selected.contains(d.code);
+                  final isExpanded = expandedMap[d.code] ?? false;
+                  final isSelected = selected.contains(d.code);
 
                   return AnimatedContainer(
+                    key: ValueKey(d.code),
                     duration: const Duration(milliseconds: 180),
                     curve: Curves.easeInOut,
                     decoration: BoxDecoration(
-                      color: isExpanded ? const Color(0xFF233246) : const Color(0xFF222b35),
+                      color: isExpanded
+                          ? const Color(0xFF233246)
+                          : const Color(0xFF222b35),
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         if (isExpanded)
-                          BoxShadow(
-                            color: Colors.black.withOpacity(.15),
+                          const BoxShadow(
+                            color: Color.fromRGBO(0, 0, 0, 0.15),
                             blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            offset: Offset(0, 2),
                           ),
                       ],
                       border: Border.all(
@@ -117,29 +151,43 @@ class _ProblemsPageState extends State<ProblemsPage> {
                       children: [
                         InkWell(
                           borderRadius: BorderRadius.circular(14),
-                          onTap: _selectionMode
+                          onTap: selectionMode
                               ? () {
-                                  setState(() {
-                                    if (isSelected) {
-                                      _selected.remove(d.code);
-                                    } else {
-                                      _selected.add(d.code);
-                                    }
-                                  });
+                                  if (isSelected) {
+                                    final newSet = Set<String>.from(selected);
+                                    newSet.remove(d.code);
+                                    ref
+                                        .read(problemsSelectedDtcsProvider
+                                            .notifier)
+                                        .state = newSet;
+                                  } else {
+                                    final newSet = Set<String>.from(selected);
+                                    newSet.add(d.code);
+                                    ref
+                                        .read(problemsSelectedDtcsProvider
+                                            .notifier)
+                                        .state = newSet;
+                                  }
                                 }
                               : () {
-                                  setState(() {
-                                    expanded[i] = !isExpanded;
-                                  });
+                                  final newMap =
+                                      Map<String, bool>.from(expandedMap);
+                                  newMap[d.code] = !isExpanded;
+                                  ref
+                                      .read(problemsExpandedListProvider
+                                          .notifier)
+                                      .state = newMap;
                                 },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
                             child: Row(
                               children: [
                                 const CircleAvatar(
                                   backgroundColor: Color(0xFF232B37),
                                   radius: 20,
-                                  child: Icon(Icons.warning, color: Colors.orange, size: 27),
+                                  child: Icon(Icons.warning,
+                                      color: Colors.orange, size: 27),
                                 ),
                                 const SizedBox(width: 18),
                                 Text(
@@ -153,22 +201,36 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (_selectionMode)
+                                if (selectionMode)
                                   Checkbox(
                                     value: isSelected,
                                     onChanged: (_) {
-                                      setState(() {
-                                        if (isSelected) {
-                                          _selected.remove(d.code);
-                                        } else {
-                                          _selected.add(d.code);
-                                        }
-                                      });
+                                      if (isSelected) {
+                                        final newSet =
+                                            Set<String>.from(selected);
+                                        newSet.remove(d.code);
+                                        ref
+                                            .read(
+                                                problemsSelectedDtcsProvider
+                                                    .notifier)
+                                            .state = newSet;
+                                      } else {
+                                        final newSet =
+                                            Set<String>.from(selected);
+                                        newSet.add(d.code);
+                                        ref
+                                            .read(
+                                                problemsSelectedDtcsProvider
+                                                    .notifier)
+                                            .state = newSet;
+                                      }
                                     },
                                   ),
-                                if (!_selectionMode)
+                                if (!selectionMode)
                                   Icon(
-                                    isExpanded ? Icons.expand_less : Icons.expand_more,
+                                    isExpanded
+                                        ? Icons.expand_less
+                                        : Icons.expand_more,
                                     color: Colors.white70,
                                     size: 26,
                                   ),
@@ -178,13 +240,15 @@ class _ProblemsPageState extends State<ProblemsPage> {
                         ),
                         if (isExpanded)
                           Padding(
-                            padding: const EdgeInsets.only(left: 33, right: 14, top: 8, bottom: 10),
+                            padding: const EdgeInsets.only(
+                                left: 33, right: 14, top: 8, bottom: 10),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (d.title != null && d.title!.isNotEmpty)
                                   Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         '\u2022 ',
@@ -207,8 +271,10 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                       ),
                                     ],
                                   ),
-                                if (d.title != null && d.title!.isNotEmpty) const SizedBox(height: 5),
-                                if (d.description != null && d.description!.isNotEmpty)
+                                if (d.title != null && d.title!.isNotEmpty)
+                                  const SizedBox(height: 5),
+                                if (d.description != null &&
+                                    d.description!.isNotEmpty)
                                   SelectableText(
                                     d.description!,
                                     style: const TextStyle(
@@ -220,7 +286,8 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                     ),
                                     maxLines: 5,
                                   ),
-                                if ((d.description == null || d.description!.isEmpty) &&
+                                if ((d.description == null ||
+                                        d.description!.isEmpty) &&
                                     (d.title == null || d.title!.isEmpty))
                                   const Text('Descrizione in caricamento…',
                                       style: TextStyle(color: Colors.white70)),
@@ -230,28 +297,33 @@ class _ProblemsPageState extends State<ProblemsPage> {
                                   children: [
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF3660EF),
+                                        backgroundColor:
+                                            const Color(0xFF3660EF),
                                         elevation: 0,
-                                        padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 19, vertical: 6),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(19),
+                                          borderRadius:
+                                              BorderRadius.circular(19),
                                         ),
                                       ),
                                       onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => AiChatPage(
-                                              initialPrompt:
-                                                  ' Ho un problema con il codice ${d.code}: ${d.title ?? ''}. ${d.description ?? ''}. Puoi aiutarmi a capire la causa e la possibile soluzione?',
-                                            ),
-                                          ),
-                                        );
+                                        ref
+                                            .read(aiInitialPromptProvider
+                                                .notifier)
+                                            .state =
+                                            'Ho un problema con il codice ${d.code}: ${d.title ?? ''}. ${d.description ?? ''}. Puoi aiutarmi a capire la causa e la possibile soluzione?';
+                                        ref
+                                            .read(navigationIndexProvider
+                                                .notifier)
+                                            .state = 2;
                                       },
                                       child: const Text(
                                         'Chiedi all\'IA',
                                         style: TextStyle(
-                                            fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14.5,
+                                            color: Colors.white),
                                       ),
                                     ),
                                   ],
@@ -265,10 +337,10 @@ class _ProblemsPageState extends State<ProblemsPage> {
                 },
               ),
       ),
-      floatingActionButton: dtcs.isEmpty || !_selectionMode
+      floatingActionButton: dtcs.isEmpty || !selectionMode
           ? null
           : FloatingActionButton.extended(
-              onPressed: _selected.isEmpty
+              onPressed: selected.isEmpty
                   ? null
                   : () async {
                       final confirmed = await showDialog<bool>(
@@ -276,24 +348,40 @@ class _ProblemsPageState extends State<ProblemsPage> {
                         builder: (ctx) => AlertDialog(
                           title: const Text('Conferma cancellazione'),
                           content: Text(
-                              'Sei sicuro di voler cancellare ${_selected.length} errore(i)?'),
+                              'Sei sicuro di voler cancellare ${selected.length} errore(i)?'),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
-                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sì')),
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('No')),
+                            TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Sì')),
                           ],
                         ),
                       );
-                      if (confirmed == true) {
-                        app.dashboard.removeDtcCodes(_selected);
-                        setState(() {
-                          _selectionMode = false;
-                          _selected.clear();
-                        });
+                      if (confirmed == true && context.mounted) {
+                        final count = selected.length;
+                        app.dashboard.removeDtcCodes(selected);
+                        ref.read(problemsSelectionModeProvider.notifier).state =
+                            false;
+                        ref.read(problemsSelectedDtcsProvider.notifier).state =
+                            {};
+                        if (context.mounted) {
+                          ErrorHandler.showSuccess(
+                            context,
+                            message:
+                                '$count errore(i) cancellato(i) con successo',
+                          );
+                        }
                       }
                     },
               label: const Text('Cancella selezionati'),
               icon: const Icon(Icons.delete),
             ),
     );
+  }
+
+  bool _hasUninterpretedDtcs(List<Dtc> dtcs) {
+    return dtcs.any((d) => d.title == null || d.title!.isEmpty);
   }
 }

@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'network_helper.dart';
 
 class AiMessage {
-  final String role; // user | model
-  final String text;
-  final bool isLoading;
-  final DateTime ts;
   AiMessage({
     required this.role,
     required this.text,
@@ -14,11 +11,29 @@ class AiMessage {
     DateTime? ts,
   }) : ts = ts ?? DateTime.now();
 
-  AiMessage copyWith({String? text, bool? isLoading}) =>
-      AiMessage(role: role, text: text ?? this.text, isLoading: isLoading ?? this.isLoading);
+  final String role; // user | model
+  final String text;
+  final bool isLoading;
+  final DateTime ts;
+
+  AiMessage copyWith({String? text, bool? isLoading}) => AiMessage(
+        role: role,
+        text: text ?? this.text,
+        isLoading: isLoading ?? this.isLoading,
+        ts: ts,
+      );
+
+  @override
+  String toString() =>
+      'AiMessage(role: $role, text: ${text.substring(0, text.length.clamp(0, 50))}..., isLoading: $isLoading)';
 }
 
 class AiChatService extends ChangeNotifier {
+  AiChatService({required String apiKey, String modelName = 'gemini-2.5-flash'})
+      : _model = GenerativeModel(model: modelName, apiKey: apiKey) {
+    _chat = _model.startChat();
+  }
+
   final GenerativeModel _model;
   late ChatSession _chat;
 
@@ -35,11 +50,6 @@ Puoi usare al massimo brevi elenchi puntati.
 Mantieni la risposta concisa, facile da leggere e naturale in italiano.
 ''';
 
-  AiChatService({required String apiKey, String modelName = 'gemini-2.5-flash'})
-      : _model = GenerativeModel(model: modelName, apiKey: apiKey) {
-    _chat = _model.startChat();
-  }
-
   Future<void> reset({bool savePrevious = false}) async {
     _history.clear();
     lastError = null;
@@ -54,15 +64,33 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
     sending = true;
     lastError = null;
 
-    // Mostra subito il messaggio dell’utente
+    // Mostra subito il messaggio dell'utente
     _history.add(AiMessage(role: 'user', text: text));
     // Messaggio di caricamento per il modello
     _history.add(AiMessage(role: 'model', text: '...', isLoading: true));
     notifyListeners();
 
+    // Check network connectivity
+    final hasNetwork = await NetworkHelper.hasConnection();
+    if (!hasNetwork) {
+      lastError = 'Nessuna connessione a Internet';
+      _replaceLoadingWith(
+        AiMessage(
+            role: 'model', text: 'Errore: Nessuna connessione a Internet'),
+      );
+      sending = false;
+      notifyListeners();
+      return;
+    }
+
     try {
       await _chat.sendMessage(Content.text(_systemPrompt));
-      final stream = _chat.sendMessageStream(Content.text(text));
+
+      // Add timeout to prevent hanging
+      final stream = _chat
+          .sendMessageStream(Content.text(text))
+          .timeout(const Duration(seconds: 30));
+
       final buffer = StringBuffer();
 
       await for (final chunk in stream) {
@@ -73,9 +101,24 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
       }
 
       _finalizeStreaming(buffer.toString());
-    } catch (e, st) {
-      debugPrint('[AiChat ERROR] $e\n$st');
-      lastError = 'Errore: $e';
+    } on TimeoutException {
+      lastError = 'Timeout: la richiesta ha impiegato troppo tempo';
+      _replaceLoadingWith(
+        AiMessage(
+            role: 'model',
+            text: 'Timeout: la richiesta ha impiegato troppo tempo. Riprova.'),
+      );
+    } catch (e) {
+
+      // Determine if it's a network error
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('NetworkException') ||
+          e.toString().contains('Failed host lookup')) {
+        lastError = 'Nessuna connessione a Internet';
+      } else {
+        lastError = 'Errore nella comunicazione con l\'AI';
+      }
+
       _replaceLoadingWith(
         AiMessage(role: 'model', text: 'Si è verificato un errore. Riprova.'),
       );
@@ -86,7 +129,8 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
   }
 
   void _updateStreaming(String text) {
-    final idx = _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
+    final idx =
+        _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
     if (idx != -1) {
       _history[idx] = AiMessage(role: 'model', text: text, isLoading: true);
     }
@@ -94,7 +138,8 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
   }
 
   void _finalizeStreaming(String text) {
-    final idx = _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
+    final idx =
+        _history.lastIndexWhere((m) => m.isLoading && m.role == 'model');
     if (idx != -1) {
       _history[idx] = AiMessage(role: 'model', text: text, isLoading: false);
     }

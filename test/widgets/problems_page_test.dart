@@ -9,7 +9,7 @@ void main() {
       expect(ProblemsPage, isNotNull);
 
       // Verify it's a ConsumerStatefulWidget
-      final page = const ProblemsPage();
+      const page = ProblemsPage();
       expect(page, isA<ProblemsPage>());
     });
 

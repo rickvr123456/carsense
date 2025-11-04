@@ -7,7 +7,7 @@ void main() {
       // Simple test - verify page type
       expect(HistoryPage, isNotNull);
 
-      final page = const HistoryPage();
+      const page = HistoryPage();
       expect(page, isA<HistoryPage>());
     });
 

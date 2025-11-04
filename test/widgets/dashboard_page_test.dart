@@ -8,7 +8,7 @@ void main() {
       // Simple test - verify page type
       expect(AppShell, isNotNull);
 
-      final shell = const AppShell();
+      const shell = AppShell();
       expect(shell, isA<AppShell>());
     });
 

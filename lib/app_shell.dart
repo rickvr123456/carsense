@@ -70,19 +70,19 @@ class _AppShellState extends ConsumerState<AppShell> {
               onDestinationSelected: isScanning
                   ? null
                   : (i) => ref.read(navigationIndexProvider.notifier).state = i,
-              destinations: [
+              destinations: const [
                 NavigationDestination(
-                    icon: const Icon(Icons.speed),
+                    icon: Icon(Icons.speed),
                     label: AppStrings.navDashboard),
                 NavigationDestination(
-                    icon: const Icon(Icons.warning_amber),
+                    icon: Icon(Icons.warning_amber),
                     label: AppStrings.navProblems),
                 NavigationDestination(
-                    icon: const Icon(Icons.smart_toy), label: AppStrings.navAi),
+                    icon: Icon(Icons.smart_toy), label: AppStrings.navAi),
                 NavigationDestination(
-                    icon: const Icon(Icons.map), label: AppStrings.navMap),
+                    icon: Icon(Icons.map), label: AppStrings.navMap),
                 NavigationDestination(
-                    icon: const Icon(Icons.history),
+                    icon: Icon(Icons.history),
                     label: AppStrings.navHistory),
               ],
             ),

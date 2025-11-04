@@ -137,8 +137,8 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
 }
 
 class _MessagesList extends ConsumerWidget {
-  final ScrollController controller;
   const _MessagesList({required this.controller});
+  final ScrollController controller;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -199,15 +199,15 @@ class _MessagesList extends ConsumerWidget {
 }
 
 class _InputBar extends ConsumerWidget {
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final Future<void> Function(String text) onSend;
 
   const _InputBar({
     required this.controller,
     required this.focusNode,
     required this.onSend,
   });
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final Future<void> Function(String text) onSend;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

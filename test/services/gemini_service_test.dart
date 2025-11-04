@@ -23,7 +23,7 @@ void main() {
     });
 
     test('Dtc model should be created with all fields', () {
-      final dtc = Dtc(
+      const dtc = Dtc(
         'P0340',
         title: 'Sensore posizione albero a camme',
         description: 'Errore nel sensore CMP',

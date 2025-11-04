@@ -5,7 +5,7 @@ void main() {
   group('Dtc class tests', () {
     test('should create Dtc instance with required code and optional fields',
         () {
-      final dtc = Dtc(
+      const dtc = Dtc(
         'P0123',
         title: 'Throttle Position Sensor',
         description: 'Sensor malfunction detected',
@@ -19,7 +19,7 @@ void main() {
     });
 
     test('should allow optional fields to be null', () {
-      final dtc = Dtc('P0456');
+      const dtc = Dtc('P0456');
 
       expect(dtc.code, 'P0456');
       expect(dtc.title, isNull);

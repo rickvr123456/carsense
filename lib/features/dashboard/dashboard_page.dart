@@ -143,13 +143,13 @@ class _DashboardView extends ConsumerWidget {
 }
 
 class _MetricsCard extends StatelessWidget {
-  final String rpm, speed, battery, coolant;
   const _MetricsCard({
     required this.rpm,
     required this.speed,
     required this.battery,
     required this.coolant,
   });
+  final String rpm, speed, battery, coolant;
 
   @override
   Widget build(BuildContext context) {
@@ -207,8 +207,8 @@ class _MetricsCard extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  final Color color;
   const _Dot(this.color);
+  final Color color;
   @override
   Widget build(BuildContext context) {
     return Container(

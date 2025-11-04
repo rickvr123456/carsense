@@ -4,10 +4,3 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    allow:
-      - dependency-type: "all"
-  
-  - package-ecosystem: "pub"
-    directory: "/"
-    schedule:
-      interval: "weekly"

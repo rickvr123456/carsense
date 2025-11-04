@@ -86,6 +86,7 @@ ${dtcCodes.join(', ')}
             return result;
           }
         } catch (e2) {
+          return {};
         }
       }
       return {};

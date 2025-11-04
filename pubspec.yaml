@@ -15,7 +15,7 @@ dependencies:
   google_generative_ai: ^0.4.7
   flutter_dotenv: ^5.0.2
   logger: ^1.1.0
-  flutter_riverpod: ^2.3.6
+  flutter_riverpod: ">=2.3.6 <4.0.0"
 
 dev_dependencies:
   flutter_test:

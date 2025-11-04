@@ -17,17 +17,11 @@ final loggerProvider = Provider<Logger>((ref) {
 final aiKeyProvider = Provider<String>(
     (ref) {
       final key = dotenv.env[AppConstants.envAiKey] ?? dotenv.env[AppConstants.envGeminiKey] ?? '';
-      if (key.isEmpty) {
-        globalLogger.w('[Providers] AI keys not configured in .env');
-      }
       return key;
     });
 final placesKeyProvider =
     Provider<String>((ref) {
       final key = dotenv.env[AppConstants.envPlacesKey] ?? '';
-      if (key.isEmpty) {
-        globalLogger.w('[Providers] PLACES_API_KEY not configured in .env');
-      }
       return key;
     });
 

@@ -6,7 +6,6 @@ import '../../core/models/dtc.dart';
 import '../../services/error_history_service.dart';
 import '../../services/gemini_service.dart';
 import '../../services/network_helper.dart';
-import '../../riverpod_providers.dart';
 
 /// Enum per i tipi di errore del dashboard
 enum ErrorType { none, network, ai, timeout }
@@ -86,7 +85,6 @@ class DashboardState extends ChangeNotifier {
 
   void attachGemini(GeminiService service) {
     _gemini = service;
-    globalLogger.d('[Dashboard] GeminiService collegato.');
   }
 
   void _setError(ErrorType type, String message) {
@@ -127,7 +125,6 @@ class DashboardState extends ChangeNotifier {
     final uninterpretedDtcs =
         _dtcs.where((d) => d.title == null || d.title!.isEmpty).toList();
     if (uninterpretedDtcs.isEmpty) {
-      globalLogger.d('[Dashboard] Tutti i DTC sono già stati interpretati.');
       return;
     }
     isScanning = true;
@@ -182,8 +179,6 @@ class DashboardState extends ChangeNotifier {
 
   Future<void> _describeWithAI() async {
     if (_gemini == null || _dtcs.isEmpty) {
-      globalLogger
-          .d('[Dashboard] GeminiService non collegato o lista DTC vuota.');
       isScanning = false;
       notifyListeners();
       return;
@@ -194,17 +189,14 @@ class DashboardState extends ChangeNotifier {
     if (!hasNetwork) {
       _setError(ErrorType.network, 'Nessuna connessione a Internet');
       isScanning = false;
-      globalLogger.e('[Dashboard] Nessuna connessione a Internet');
       return;
     }
 
     try {
       _clearError();
       final codes = _dtcs.map((e) => e.code).toList();
-      globalLogger.d('[Dashboard] Richiedo descrizioni a Gemini per: $codes');
       final map = await _gemini!.describeDtcs(codes);
       if (map.isEmpty) {
-        globalLogger.d('[Dashboard] Nessuna descrizione ricevuta da Gemini.');
         _setError(
           ErrorType.ai,
           'L\'AI non ha fornito descrizioni per i codici rilevati.',
@@ -223,18 +215,14 @@ class DashboardState extends ChangeNotifier {
           );
         }
       }
-      globalLogger.d('[Dashboard] Descrizioni AI impostate.');
       isScanning = false;
       notifyListeners();
     } on TimeoutException {
       _setError(ErrorType.timeout, 'Timeout: la richiesta ha impiegato troppo tempo');
       isScanning = false;
-      globalLogger.e('[Dashboard][TIMEOUT]');
-    } catch (e, st) {
+    } catch (e) {
       _setError(ErrorType.ai, e.toString());
       isScanning = false;
-      globalLogger.e('[Dashboard][ERRORE AI] $e');
-      globalLogger.e(st.toString());
     }
   }
 }

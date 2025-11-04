@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import '../riverpod_providers.dart';
 import 'network_helper.dart';
 
 class AiMessage {
@@ -75,7 +74,6 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
     final hasNetwork = await NetworkHelper.hasConnection();
     if (!hasNetwork) {
       lastError = 'Nessuna connessione a Internet';
-      globalLogger.e('[AiChat] Nessuna connessione a Internet');
       _replaceLoadingWith(
         AiMessage(
             role: 'model', text: 'Errore: Nessuna connessione a Internet'),
@@ -104,16 +102,13 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
 
       _finalizeStreaming(buffer.toString());
     } on TimeoutException {
-      globalLogger.e('[AiChat TIMEOUT] Request timed out');
       lastError = 'Timeout: la richiesta ha impiegato troppo tempo';
       _replaceLoadingWith(
         AiMessage(
             role: 'model',
             text: 'Timeout: la richiesta ha impiegato troppo tempo. Riprova.'),
       );
-    } catch (e, st) {
-      globalLogger.e('[AiChat ERROR] $e');
-      globalLogger.e(st.toString());
+    } catch (e) {
 
       // Determine if it's a network error
       if (e.toString().contains('SocketException') ||

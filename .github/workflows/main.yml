@@ -77,10 +77,8 @@ jobs:
         with:
           channel: stable
           cache: true
-
-      - name: Get dependencies
-        run: flutter pub get
-
+      
+        
       - name: Create .env from secrets
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -92,6 +90,9 @@ jobs:
           AI_API_KEY=$AI_API_KEY
           PLACES_API_KEY=$PLACES_API_KEY
           EOF
+          
+      - name: Get dependencies
+        run: flutter pub get
 
       - name: Build APK (release)
         run: flutter build apk --release

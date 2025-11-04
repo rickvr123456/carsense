@@ -37,7 +37,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         Theme(
           data: Theme.of(context).copyWith(
             navigationBarTheme: NavigationBarThemeData(
-              backgroundColor: const Color(0xFF0F1418),
+              backgroundColor: AppColors.surface,
               indicatorColor: Colors.transparent,
               labelTextStyle:
                   WidgetStateProperty.resolveWith<TextStyle>((states) {
@@ -64,7 +64,7 @@ class _AppShellState extends ConsumerState<AppShell> {
           child: Scaffold(
             body: pages[index],
             bottomNavigationBar: NavigationBar(
-              backgroundColor: const Color(0xFF0F1418),
+              backgroundColor: AppColors.surface,
               indicatorColor: Colors.transparent,
               selectedIndex: index,
               onDestinationSelected: isScanning

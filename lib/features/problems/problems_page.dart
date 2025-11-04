@@ -27,6 +27,18 @@ class ProblemsPage extends ConsumerWidget {
       });
     }
 
+    if (app.dashboard.hasAiError && app.dashboard.lastAiError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ErrorHandler.showAiError(
+          context,
+          details: app.dashboard.lastAiError,
+          onRetry: () => app.dashboard.retryAiDescription(),
+        );
+        app.dashboard.hasAiError = false;
+        app.dashboard.lastAiError = null;
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -287,8 +299,14 @@ class ProblemsPage extends ConsumerWidget {
                                 if ((d.description == null ||
                                         d.description!.isEmpty) &&
                                     (d.title == null || d.title!.isEmpty))
-                                  const Text('Descrizione in caricamento…',
-                                      style: TextStyle(color: Colors.white70)),
+                                  const Text(
+                                    'Errore interpretazione AI',
+                                    style: TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,

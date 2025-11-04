@@ -46,7 +46,7 @@ class _DashboardView extends ConsumerWidget {
         ErrorHandler.showAiError(
           context,
           details: state.lastAiError,
-          onRetry: () => state.rescan(),
+          onRetry: () => state.retryAiDescription(),
         );
         state.hasAiError = false;
         state.lastAiError = null;

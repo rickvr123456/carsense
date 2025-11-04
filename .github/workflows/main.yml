@@ -18,9 +18,10 @@ jobs:
           flutter-version: "3.35.7"
 
       - name: Create .env file
-        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-          AI_API_KEY=${{ secrets.AI_API_KEY }}
-          PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" > .env
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "AI_API_KEY=${{ secrets.AI_API_KEY }}" >> .env
+          echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
 
       - name: Get dependencies
         run: flutter pub get
@@ -48,9 +49,10 @@ jobs:
           flutter-version: "3.35.7"
 
       - name: Create .env file
-        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-          AI_API_KEY=${{ secrets.AI_API_KEY }}
-          PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" > .env
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "AI_API_KEY=${{ secrets.AI_API_KEY }}" >> .env
+          echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
 
       - name: Get dependencies
         run: flutter pub get

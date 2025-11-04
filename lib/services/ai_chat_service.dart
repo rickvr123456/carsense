@@ -43,7 +43,6 @@ class AiChatService extends ChangeNotifier {
   bool sending = false;
   String? lastError;
 
-  // Prompt invisibile
   static const String _systemPrompt = '''
 D'ora in poi rispondi SEMPRE in testo semplice, senza titoli, grassetti o markdown.
 Puoi usare al massimo brevi elenchi puntati.
@@ -64,13 +63,10 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
     sending = true;
     lastError = null;
 
-    // Mostra subito il messaggio dell'utente
     _history.add(AiMessage(role: 'user', text: text));
-    // Messaggio di caricamento per il modello
     _history.add(AiMessage(role: 'model', text: '...', isLoading: true));
     notifyListeners();
 
-    // Check network connectivity
     final hasNetwork = await NetworkHelper.hasConnection();
     if (!hasNetwork) {
       lastError = 'Nessuna connessione a Internet';
@@ -86,7 +82,6 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
     try {
       await _chat.sendMessage(Content.text(_systemPrompt));
 
-      // Add timeout to prevent hanging
       final stream = _chat
           .sendMessageStream(Content.text(text))
           .timeout(const Duration(seconds: 30));
@@ -109,8 +104,6 @@ Mantieni la risposta concisa, facile da leggere e naturale in italiano.
             text: 'Timeout: la richiesta ha impiegato troppo tempo. Riprova.'),
       );
     } catch (e) {
-
-      // Determine if it's a network error
       if (e.toString().contains('SocketException') ||
           e.toString().contains('NetworkException') ||
           e.toString().contains('Failed host lookup')) {

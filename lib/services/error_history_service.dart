@@ -2,7 +2,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../core/constants/app_constants.dart';
 
-/// Service to manage error history using SharedPreferences
 class ErrorHistoryService {
   Future<void> addError(String code) async {
     final prefs = await SharedPreferences.getInstance();
@@ -20,7 +19,6 @@ class ErrorHistoryService {
       final decoded = json.decode(data);
       return List<Map<String, dynamic>>.from(decoded);
     } catch (e) {
-      // If data is corrupted, return empty list
       return [];
     }
   }

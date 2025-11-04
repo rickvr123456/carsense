@@ -35,7 +35,6 @@ class _MapPageState extends ConsumerState<MapPage> {
       error = null;
     });
     try {
-      // Permessi e posizione
       final perm = await Geolocator.requestPermission();
       if (perm == LocationPermission.denied ||
           perm == LocationPermission.deniedForever) {
@@ -50,7 +49,6 @@ class _MapPageState extends ConsumerState<MapPage> {
                 'L\'app necessita dei permessi di localizzazione per mostrare le officine vicine. '
                 'Abilita i permessi nelle impostazioni del dispositivo.',
             onOpenSettings: () {
-              // Potremmo aprire le impostazioni con un package come app_settings
               ErrorHandler.showInfo(context,
                   message: 'Vai in Impostazioni > App > CarSense > Permessi');
             },
@@ -102,7 +100,6 @@ class _MapPageState extends ConsumerState<MapPage> {
         loading = false;
       });
       if (mounted) {
-        // Check if it's a network error
         if (e.toString().contains('SocketException') ||
             e.toString().contains('Failed host lookup')) {
           ErrorHandler.showNetworkError(context, onRetry: _prepareMap);

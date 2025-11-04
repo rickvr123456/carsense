@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Application theme configuration
 class AppTheme {
   AppTheme._();
 

@@ -30,17 +30,14 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
     final chat = ref.watch(aiChatServiceProvider);
     final initialPrompt = ref.watch(aiInitialPromptProvider);
 
-    // Process initial prompt only once
     if (initialPrompt != null && !_hasProcessedInitialPrompt) {
       _hasProcessedInitialPrompt = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await chat.send(initialPrompt);
-        // Clear the prompt after sending
         ref.read(aiInitialPromptProvider.notifier).state = null;
       });
     }
 
-    // Show error dialog if error occurred
     if (chat.lastError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (chat.lastError == 'Nessuna connessione a Internet') {
@@ -56,7 +53,7 @@ class _AiChatPageState extends ConsumerState<AiChatPage> {
             details: chat.lastError,
           );
         }
-        chat.lastError = null; // Clear after showing
+        chat.lastError = null;
       });
     }
 

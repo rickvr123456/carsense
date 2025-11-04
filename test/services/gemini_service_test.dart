@@ -8,7 +8,7 @@ void main() {
 
     setUp(() {
       geminiService = GeminiService(
-        apiKey: 'test_api_key_dummy_AIzaSyBO9nCSYlXMYVbtV8Pe8_JoSZiivGm17A',
+        apiKey: 'test_key',
         modelName: 'gemini-2.5-flash',
       );
     });

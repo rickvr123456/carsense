@@ -15,7 +15,6 @@ class ProblemsPage extends ConsumerWidget {
     final selected = ref.watch(problemsSelectedDtcsProvider);
     final expandedMap = ref.watch(problemsExpandedListProvider);
 
-    // Ensure expanded state is synchronized with DTCs
     final currentDtcCodes = dtcs.map((d) => d.code).toList();
     if (expandedMap.length != dtcs.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -23,7 +22,6 @@ class ProblemsPage extends ConsumerWidget {
         for (final code in currentDtcCodes) {
           newMap[code] = expandedMap[code] ?? false;
         }
-        // Remove codes that no longer exist
         newMap.removeWhere((code, _) => !currentDtcCodes.contains(code));
         ref.read(problemsExpandedListProvider.notifier).state = newMap;
       });

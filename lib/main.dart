@@ -7,7 +7,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load .env file
   await dotenv.load(fileName: '.env');
 
   runApp(const ProviderScope(child: CarSenseApp()));
@@ -19,7 +18,6 @@ class CarSenseApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'CarSense',
       theme: AppTheme.darkTheme,
       home: const AppShell(),

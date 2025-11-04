@@ -1,5 +1,3 @@
-/// Data Transfer Object for Diagnostic Trouble Code
-/// Represents an OBD-II error code with its description
 class Dtc {
   const Dtc(
     this.code, {
@@ -13,7 +11,6 @@ class Dtc {
   final String? description;
   final String? detail;
 
-  /// Creates a copy of this Dtc with updated fields
   Dtc copyWith({
     String? code,
     String? title,

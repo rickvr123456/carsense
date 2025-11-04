@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// Centralized error handling and user feedback
 class ErrorHandler {
   ErrorHandler._();
 
-  /// Show error dialog with icon and message
   static Future<void> showErrorDialog(
     BuildContext context, {
     required String title,
@@ -52,7 +50,6 @@ class ErrorHandler {
     );
   }
 
-  /// Show network error dialog
   static Future<void> showNetworkError(
     BuildContext context, {
     VoidCallback? onRetry,
@@ -67,7 +64,6 @@ class ErrorHandler {
     );
   }
 
-  /// Show AI/Gemini error dialog
   static Future<void> showAiError(
     BuildContext context, {
     String? details,
@@ -88,7 +84,6 @@ class ErrorHandler {
     );
   }
 
-  /// Show location/GPS error dialog
   static Future<void> showLocationError(
     BuildContext context, {
     required String message,
@@ -103,7 +98,6 @@ class ErrorHandler {
     );
   }
 
-  /// Show generic error dialog
   static Future<void> showGenericError(
     BuildContext context, {
     String? message,
@@ -118,7 +112,6 @@ class ErrorHandler {
     );
   }
 
-  /// Show success snackbar
   static void showSuccess(
     BuildContext context, {
     required String message,
@@ -154,43 +147,6 @@ class ErrorHandler {
     );
   }
 
-  /// Show warning snackbar
-  static void showWarning(
-    BuildContext context, {
-    required String message,
-    Duration duration = const Duration(seconds: 4),
-  }) {
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.warning_amber, color: AppColors.warning, size: 24),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppColors.surface,
-        duration: duration,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
-    );
-  }
-
-  /// Show info snackbar
   static void showInfo(
     BuildContext context, {
     required String message,
@@ -224,37 +180,5 @@ class ErrorHandler {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
-  }
-
-  /// Show loading dialog
-  static void showLoading(BuildContext context, {String? message}) {
-    if (!context.mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => PopScope(
-        canPop: false,
-        child: AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(color: AppColors.primary),
-              if (message != null) ...[
-                const SizedBox(height: 16),
-                Text(message),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Dismiss loading dialog
-  static void dismissLoading(BuildContext context) {
-    if (context.mounted) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
   }
 }

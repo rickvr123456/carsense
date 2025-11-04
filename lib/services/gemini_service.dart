@@ -12,7 +12,6 @@ class GeminiService {
 
   final GenerativeModel model;
 
-  /// Chiede a Gemini di generare titolo e descrizione sintetica per ciascun codice OBD
   Future<Map<String, Dtc>> describeDtcs(List<String> dtcCodes) async {
     if (dtcCodes.isEmpty) {
       return {};
@@ -23,7 +22,6 @@ class GeminiService {
     try {
       final contents = [Content.text(prompt)];
 
-      // Add timeout to prevent hanging requests
       final response = await model
           .generateContent(contents)
           .timeout(AppConstants.networkTimeout);
@@ -88,7 +86,6 @@ ${dtcCodes.join(', ')}
             return result;
           }
         } catch (e2) {
-          // Fallback parsing failed, return empty
         }
       }
       return {};

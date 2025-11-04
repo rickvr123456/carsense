@@ -7,10 +7,8 @@ import '../../services/error_history_service.dart';
 import '../../services/gemini_service.dart';
 import '../../services/network_helper.dart';
 
-/// Enum per i tipi di errore del dashboard
 enum ErrorType { none, network, ai, timeout }
 
-/// Classe che rappresenta lo stato di errore
 class ErrorState {
   const ErrorState({
     required this.type,
@@ -47,10 +45,8 @@ class DashboardState extends ChangeNotifier {
 
   final _history = ErrorHistoryService();
 
-  // Unified error state
   ErrorState errorState = ErrorState.none;
 
-  // Deprecated: kept for backward compatibility during migration
   String? get lastNetworkError =>
       errorState.type == ErrorType.network ? errorState.message : null;
   set lastNetworkError(String? value) {
@@ -112,7 +108,6 @@ class DashboardState extends ChangeNotifier {
     _performScan();
   }
 
-  /// Esegue la scansione: simula valori, genera DTC e chiama AI
   void _performScan() {
     isScanning = true;
     _simulateLiveValues();
@@ -120,7 +115,6 @@ class DashboardState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Riprova a interpretare solo i DTC non ancora interpretati
   void retryAiDescription() {
     final uninterpretedDtcs =
         _dtcs.where((d) => d.title == null || d.title!.isEmpty).toList();
@@ -184,7 +178,6 @@ class DashboardState extends ChangeNotifier {
       return;
     }
 
-    // Check network connectivity
     final hasNetwork = await NetworkHelper.hasConnection();
     if (!hasNetwork) {
       _setError(ErrorType.network, 'Nessuna connessione a Internet');
@@ -204,7 +197,6 @@ class DashboardState extends ChangeNotifier {
         isScanning = false;
         return;
       }
-      // Replace DTCs with updated copies instead of mutating
       for (int i = 0; i < _dtcs.length; i++) {
         final d = _dtcs[i];
         final aiDtc = map[d.code.toUpperCase()];

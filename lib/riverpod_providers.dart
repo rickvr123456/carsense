@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'services/ai_chat_service.dart';
@@ -8,15 +7,9 @@ import 'services/places_service.dart';
 import 'core/constants/app_constants.dart';
 import 'app_state.dart';
 
-final globalLogger = Logger();
-
-final loggerProvider = Provider<Logger>((ref) {
-  return globalLogger;
-});
-
 final aiKeyProvider = Provider<String>(
     (ref) {
-      final key = dotenv.env[AppConstants.envAiKey] ?? dotenv.env[AppConstants.envGeminiKey] ?? '';
+      final key = dotenv.env[AppConstants.envGeminiKey] ?? '';
       return key;
     });
 final placesKeyProvider =

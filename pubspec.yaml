@@ -1,6 +1,6 @@
-
 name: carsense
-description: Emulatore OBD con Dashboard, Problemi, Supporto IA e Mappa
+description: OBD-II diagnostic app
+version: 1.0.0+1
 environment:
   sdk: ">=3.4.0 <4.0.0"
 

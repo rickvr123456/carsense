@@ -44,10 +44,9 @@ class AiChatService extends ChangeNotifier {
   String? lastError;
 
   static const String _systemPrompt = '''
-D'ora in poi rispondi SEMPRE in testo semplice, senza titoli, grassetti o markdown.
-Puoi usare al massimo brevi elenchi puntati.
+D'ora in poi rispondi SEMPRE e SOLO in testo semplice, senza titoli, grassetti o markdown.
 Mantieni la risposta concisa, facile da leggere e naturale in italiano.
-''';
+Il testo deve essere centrato a sinistra e al massimo puoi usare elenchi numerati quando elenchi''';
 
   Future<void> reset({bool savePrevious = false}) async {
     _history.clear();

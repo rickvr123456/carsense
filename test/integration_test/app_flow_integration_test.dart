@@ -9,14 +9,11 @@ void main() {
     });
 
     test('Error history service integrates with persistence', () async {
-      // 1. Test error history persistence
       final historyService = ErrorHistoryService();
 
-      // Initial state should be empty
       var history = await historyService.getHistory();
       expect(history, isEmpty);
 
-      // 2. Add errors
       await historyService.addError('P0123');
       await historyService.addError('P0456');
       history = await historyService.getHistory();
@@ -25,7 +22,6 @@ void main() {
       expect(history[0]['code'], 'P0123');
       expect(history[1]['code'], 'P0456');
 
-      // 3. Clear history
       await historyService.clearHistory();
       final emptyHistory = await historyService.getHistory();
       expect(emptyHistory, isEmpty);
@@ -34,7 +30,6 @@ void main() {
     test('Multiple error codes can be stored and retrieved', () async {
       final historyService = ErrorHistoryService();
 
-      // Add multiple codes
       final codes = ['P0100', 'P0200', 'P0300', 'P0400', 'P0500'];
       for (final code in codes) {
         await historyService.addError(code);

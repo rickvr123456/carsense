@@ -5,17 +5,14 @@ void main() {
   group('ProblemsPage Widget Tests', () {
     testWidgets('ProblemsPage is a ConsumerStatefulWidget',
         (WidgetTester tester) async {
-      // Simple widget tree test - just verify page type
       expect(ProblemsPage, isNotNull);
 
-      // Verify it's a ConsumerStatefulWidget
       const page = ProblemsPage();
       expect(page, isA<ProblemsPage>());
     });
 
     testWidgets('ProblemsPage can be instantiated',
         (WidgetTester tester) async {
-      // Minimal test - just check constructor works
       expect(() => const ProblemsPage(), returnsNormally);
     });
   });

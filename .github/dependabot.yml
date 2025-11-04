@@ -4,4 +4,12 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    auto-merge: true
+    allow:
+      - dependency-type: "all"
+  
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    allow:
+      - dependency-type: "all"

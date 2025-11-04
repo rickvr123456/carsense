@@ -8,7 +8,6 @@ import 'services/places_service.dart';
 import 'core/constants/app_constants.dart';
 import 'app_state.dart';
 
-// Global logger instance accessible by services (alternative to getIt)
 final globalLogger = Logger();
 
 final loggerProvider = Provider<Logger>((ref) {
@@ -51,13 +50,10 @@ final appStateProvider = ChangeNotifierProvider<AppState>((ref) {
   return AppState();
 });
 
-// Provider for navigation index in AppShell
 final navigationIndexProvider = StateProvider<int>((ref) => 0);
 
-// Provider for AI initial prompt (used when navigating from problems page)
 final aiInitialPromptProvider = StateProvider<String?>((ref) => null);
 
-// Provider for problems page UI state
 final problemsSelectionModeProvider = StateProvider<bool>((ref) => false);
 final problemsSelectedDtcsProvider = StateProvider<Set<String>>((ref) => {});
 final problemsExpandedListProvider = StateProvider<Map<String, bool>>((ref) => {});

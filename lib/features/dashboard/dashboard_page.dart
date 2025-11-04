@@ -22,7 +22,6 @@ class _DashboardView extends ConsumerWidget {
     final state = ref.watch(appStateProvider).dashboard;
     final connected = state.connected;
 
-    // Attach Gemini from provider if not already attached
     if (state.gemini == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (state.gemini == null) {
@@ -32,7 +31,6 @@ class _DashboardView extends ConsumerWidget {
       });
     }
 
-    // Show network error dialog
     if (state.lastNetworkError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ErrorHandler.showNetworkError(
@@ -43,7 +41,6 @@ class _DashboardView extends ConsumerWidget {
       });
     }
 
-    // Show AI error dialog
     if (state.hasAiError && state.lastAiError != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ErrorHandler.showAiError(

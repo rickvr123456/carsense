@@ -6,7 +6,6 @@ import 'core/constants/app_strings.dart';
 import 'core/widgets/fullscreen_loading.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'features/problems/problems_page.dart';
-// CAMBIA QUI: usa la nuova pagina AI
 import 'features/ai/ai_chat_page.dart';
 import 'features/map/map_page.dart';
 import 'features/history/history_page.dart';
@@ -22,7 +21,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   final pages = const [
     DashboardPage(),
     ProblemsPage(),
-    AiChatPage(), // <<— deve essere questa se hai importato ai_chat_page.dart
+    AiChatPage(),
     MapPage(),
     HistoryPage(),
   ];

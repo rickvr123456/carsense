@@ -61,7 +61,6 @@ class ProblemsPage extends ConsumerWidget {
               ),
             ),
             const Spacer(),
-            // Pulsante Riprova AI se ci sono DTC non interpretati
             if (dtcs.isNotEmpty &&
                 !selectionMode &&
                 _hasUninterpretedDtcs(dtcs))

@@ -5,6 +5,17 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val envFile = rootProject.file("../.env")
+val envVars = mutableMapOf<String, String>()
+if (envFile.exists()) {
+    envFile.readLines().forEach { line ->
+        if (line.contains("=") && !line.startsWith("#")) {
+            val (key, value) = line.split("=", limit = 2)
+            envVars[key.trim()] = value.trim()
+        }
+    }
+}
+
 android {
     namespace = "com.example.carsense"
     compileSdk = flutter.compileSdkVersion
@@ -19,6 +30,10 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.carsense"
@@ -28,6 +43,12 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Aggiungi la chiave di Google Maps come buildConfigField
+        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${envVars["PLACES_API_KEY"] ?: ""}\"")
+        
+        // Aggiungi anche come manifestPlaceholder per il manifest
+        manifestPlaceholders["mapsApiKey"] = envVars["PLACES_API_KEY"] ?: ""
     }
 
     buildTypes {

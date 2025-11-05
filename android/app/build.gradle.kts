@@ -44,10 +44,8 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
-        // Aggiungi la chiave di Google Maps come buildConfigField
         buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${envVars["PLACES_API_KEY"] ?: ""}\"")
         
-        // Aggiungi anche come manifestPlaceholder per il manifest
         manifestPlaceholders["mapsApiKey"] = envVars["PLACES_API_KEY"] ?: ""
     }
 

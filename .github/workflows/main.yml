@@ -90,4 +90,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG=$(git describe --tags --abbrev=0)
-          gh release create "$TAG" app-release.apk --generate-notes
+          gh release create "$TAG" car-sense.apk --generate-notes
